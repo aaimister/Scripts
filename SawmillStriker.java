@@ -19,7 +19,7 @@ import org.rsbot.script.methods.*;
 import org.rsbot.event.listeners.*;
 import org.rsbot.event.events.*;
 
-@ScriptManifest(authors={"Strikeskids"}, name="SawmillStriker", description="Uses the sawmill to level woodcutting", version=1.22)
+@ScriptManifest(authors={"Strikeskids"}, name="SawmillStriker", description="Uses the sawmill to level woodcutting", version=1.23)
 
 public class SawmillStriker extends Script implements PaintListener, MessageListener, MouseListener {
     
@@ -36,7 +36,7 @@ public class SawmillStriker extends Script implements PaintListener, MessageList
     int cart=46303;
     int overseer=8904;
     
-    int last = 122;
+    int last = 123;
     String threadLoc = "http://adf.ly/2VRY1";
     RSTile logPileLoc= new RSTile(3317,3495);
     RSTile logHopperLoc = new RSTile(3323,3501);
@@ -404,9 +404,13 @@ public class SawmillStriker extends Script implements PaintListener, MessageList
                 logm("Put the planks");
                 for (int i=0;i<plankId.length;i++) {
                     for (int k=0;k<28;k++) {
-                        if (inventory.getItemAt(k)!=null&&inventory.getItemAt(k).getID()==plankId[i]) {
-                            if (inventory.getCount(inventory.getItemAt(k).getID())==1) {
-                                interfaces.getComponent(771,0).getComponent(k).interact("Store-1");
+                        if (interfaces.getComponent(771,0)==null||interfaces.getComponent(771,0).getComponent(k)==null) {
+                            log("Interfaces are null");
+                            continue;
+                        }
+                        if (interfaces.getComponent(771,0).getComponent(k).getComponentID()==plankId[i]) {
+                            if (inventory.getCount(interfaces.getComponent(771,0).getComponent(k).getComponentID())==1) {
+                                interfaces.getComponent(771,0).getComponent(k).doClick();
                             }
                             else {
                                 if (interfaces.getComponent(771,0)!=null&&interfaces.getComponent(771,0).getComponent(k)!=null) {
@@ -420,7 +424,9 @@ public class SawmillStriker extends Script implements PaintListener, MessageList
                         }
                     }
                 }
-                interfaces.getComponent(cartInterface,cartCloseComponent).interact("Close");
+                sleep(700);
+                logm("Close the interface");
+                interfaces.getComponent(cartInterface,cartCloseComponent).doClick();
                 antiBan();
                 hoverTile = null;
                 return 700;
