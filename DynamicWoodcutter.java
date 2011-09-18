@@ -29,7 +29,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
@@ -59,7 +58,7 @@ import org.rsbot.script.wrappers.RSPath;
 import org.rsbot.script.wrappers.RSTile;
 import org.rsbot.script.wrappers.RSWeb;
 
-@ScriptManifest(website = "http://goo.gl/WEQX6", authors = { "hlunnb" }, keywords = { "Woodcutting, Firemaking" }, name = "Dynamic Woodcutter", version = 1.65, description = "Independently trains Woodcutting and Firemaking from a low level.")
+@ScriptManifest(website = "http://goo.gl/WEQX6", authors = { "hlunnb" }, keywords = { "Woodcutting, Firemaking" }, name = "Dynamic Woodcutter", version = 1.66, description = "Independently trains Woodcutting and Firemaking from a low level.")
 public class DynamicWoodcutter extends Script implements PaintListener, MouseListener, MessageListener {
 
 	final RSArea adviserHouse = new RSArea(new RSTile(3229, 3236), new RSTile(3232, 3241));
@@ -72,8 +71,8 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 	final RSTile willowTreeTile = new RSTile(2971, 3195); // Rimm
 	final RSTile willowTreeTile2 = new RSTile(3165, 3272); // Lumb
 	final RSTile willowTreeTile3 = new RSTile(3060, 3254); // Port Sarim
-	final RSTile yewTreeTile = new RSTile(3166, 3234); // Lumb
-	final RSTile yewTreeTile2 = new RSTile(2930, 3229); // Rimm
+	final RSTile yewTreeTile = new RSTile(2930, 3229);// Rimm
+	final RSTile yewTreeTile2 = new RSTile(3166, 3234); // Lumb
 	final RSTile yewTreeTile3 = new RSTile(3048, 3270); // Port Sarim
 	final RSArea generalStoreArea = new RSArea(new RSTile(3210, 3238), new RSTile(3219, 3246));
 	final RSTile generalStoreTile = new RSTile(3215, 3243);
@@ -81,25 +80,25 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 	final RSTile generalStoreTile2 = new RSTile(2948, 3215);
 	final RSArea draynorBankArea = new RSArea(new RSTile(3092, 3240), new RSTile(3097, 3246));
 	final RSTile draynorBankTile = new RSTile(3093, 3244);
-	final RSTile[] toGe = { new RSTile(3095, 3261), new RSTile(3094, 3266), new RSTile(3093, 3272), new RSTile(3095, 3278),
-	        new RSTile(3095, 3283), new RSTile(3095, 3288), new RSTile(3089, 3291), new RSTile(3089, 3294),
-	        new RSTile(3095, 3300), new RSTile(3098, 3304), new RSTile(3098, 3309), new RSTile(3102, 3311),
-	        new RSTile(3108, 3311), new RSTile(3114, 3312), new RSTile(3118, 3315), new RSTile(3123, 3317),
-	        new RSTile(3126, 3319), new RSTile(3131, 3324), new RSTile(3135, 3329), new RSTile(3140, 3333),
-	        new RSTile(3144, 3333), new RSTile(3146, 3337), new RSTile(3146, 3342), new RSTile(3145, 3347),
-	        new RSTile(3143, 3351), new RSTile(3141, 3356), new RSTile(3143, 3362), new RSTile(3140, 3367),
-	        new RSTile(3139, 3372), new RSTile(3136, 3377) };
-	final RSTile[] toGe2 = { new RSTile(3008, 3273), new RSTile(3008, 3274), new RSTile(3008, 3277), new RSTile(3008, 3280),
-	        new RSTile(3008, 3284), new RSTile(3007, 3287), new RSTile(3007, 3291), new RSTile(3007, 3295),
-	        new RSTile(3006, 3298), new RSTile(3006, 3301), new RSTile(3006, 3305), new RSTile(3010, 3310),
-	        new RSTile(3010, 3312), new RSTile(3015, 3317), new RSTile(3018, 3317), new RSTile(3021, 3320),
-	        new RSTile(3025, 3320), new RSTile(3029, 3320), new RSTile(3032, 3320), new RSTile(3035, 3319),
-	        new RSTile(3038, 3320), new RSTile(3043, 3322), new RSTile(3046, 3322), new RSTile(3049, 3322),
-	        new RSTile(3053, 3323), new RSTile(3058, 3321), new RSTile(3061, 3321), new RSTile(3066, 3325),
-	        new RSTile(3067, 3330), new RSTile(3070, 3333), new RSTile(3072, 3337), new RSTile(3072, 3340),
-	        new RSTile(3072, 3344), new RSTile(3072, 3348), new RSTile(3072, 3350), new RSTile(3072, 3354),
-	        new RSTile(3072, 3357), new RSTile(3072, 3358), new RSTile(3072, 3363), new RSTile(3072, 3368),
-	        new RSTile(3073, 3373), new RSTile(3073, 3377) };
+	final RSTile[] toGe = { new RSTile(3095, 3261), new RSTile(3094, 3266), new RSTile(3093, 3272),
+	        new RSTile(3095, 3278), new RSTile(3095, 3283), new RSTile(3095, 3288), new RSTile(3089, 3291),
+	        new RSTile(3089, 3294), new RSTile(3095, 3300), new RSTile(3098, 3304), new RSTile(3098, 3309),
+	        new RSTile(3102, 3311), new RSTile(3108, 3311), new RSTile(3114, 3312), new RSTile(3118, 3315),
+	        new RSTile(3123, 3317), new RSTile(3126, 3319), new RSTile(3131, 3324), new RSTile(3135, 3329),
+	        new RSTile(3140, 3333), new RSTile(3144, 3333), new RSTile(3146, 3337), new RSTile(3146, 3342),
+	        new RSTile(3145, 3347), new RSTile(3143, 3351), new RSTile(3141, 3356), new RSTile(3143, 3362),
+	        new RSTile(3140, 3367), new RSTile(3139, 3372), new RSTile(3136, 3377) };
+	final RSTile[] toGe2 = { new RSTile(3008, 3273), new RSTile(3008, 3274), new RSTile(3008, 3277),
+	        new RSTile(3008, 3280), new RSTile(3008, 3284), new RSTile(3007, 3287), new RSTile(3007, 3291),
+	        new RSTile(3007, 3295), new RSTile(3006, 3298), new RSTile(3006, 3301), new RSTile(3006, 3305),
+	        new RSTile(3010, 3310), new RSTile(3010, 3312), new RSTile(3015, 3317), new RSTile(3018, 3317),
+	        new RSTile(3021, 3320), new RSTile(3025, 3320), new RSTile(3029, 3320), new RSTile(3032, 3320),
+	        new RSTile(3035, 3319), new RSTile(3038, 3320), new RSTile(3043, 3322), new RSTile(3046, 3322),
+	        new RSTile(3049, 3322), new RSTile(3053, 3323), new RSTile(3058, 3321), new RSTile(3061, 3321),
+	        new RSTile(3066, 3325), new RSTile(3067, 3330), new RSTile(3070, 3333), new RSTile(3072, 3337),
+	        new RSTile(3072, 3340), new RSTile(3072, 3344), new RSTile(3072, 3348), new RSTile(3072, 3350),
+	        new RSTile(3072, 3354), new RSTile(3072, 3357), new RSTile(3072, 3358), new RSTile(3072, 3363),
+	        new RSTile(3072, 3368), new RSTile(3073, 3373), new RSTile(3073, 3377) };
 	final RSTile[] willowsToBank = { new RSTile(2968, 3198), new RSTile(2972, 3199), new RSTile(2975, 3202),
 	        new RSTile(2978, 3205), new RSTile(2982, 3206), new RSTile(2985, 3209), new RSTile(2989, 3211),
 	        new RSTile(2992, 3214), new RSTile(2995, 3217), new RSTile(2998, 3220), new RSTile(3000, 3224),
@@ -137,7 +136,7 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 	        tinderboxID, 14664 }; // Random event lamp 14664, Starter lamp 13439
 	final int[] dontDepositIDs = { bronzeHatchetID, ironHatchetID, steelHatchetID, blackHatchetID, mithrilHatchetID,
 	        adamantHatchetID, runeHatchetID, 995, 14664, tinderboxID };
-	
+
 	final RSTile[] logStart = { new RSTile(3199, 3243), new RSTile(3199, 3244), new RSTile(3199, 3245),
 	        new RSTile(3199, 3246), new RSTile(3196, 3237), new RSTile(3202, 3236) };
 	final RSTile[] oakStart = { new RSTile(3093, 3288), new RSTile(3093, 3290), new RSTile(3093, 3289),
@@ -215,7 +214,8 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 	final Color MOUSE_COLOR = new Color(132, 198, 99);
 	String dots = "";
 	final Timer t = new Timer(200);
-	
+	Timer screenShot = null;
+
 	GUI frame;
 	boolean guiWait = true;
 	int fails = 0;
@@ -228,23 +228,22 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 	public boolean onStart() {
 		mouse.setSpeed(5);
 		currVer = getCurrentVersion();
-		if (currVer > scriptVersion) {
-			int n;
-			int o = 1;
-			n = JOptionPane.showConfirmDialog(null, "A new version of this script is available!\n"
-			        + "Would you like to download new version?", "Update available", JOptionPane.YES_NO_OPTION);
-			System.out.println(n); // yes 0, no 1.
-			if (n == 0) {
-				o = JOptionPane.showConfirmDialog(null, "You will now be sent to powerbot.org\n"
-				        + "to download the latest version.", "Update available", JOptionPane.OK_CANCEL_OPTION);
-			}
-			if (o == 0)
-				sendToURL("http://goo.gl/WEQX6");
-
-		} else {
-			log(Color.GREEN, "The script is up to date!");
-		}
-
+//		if (currVer > scriptVersion) {
+//			int n;
+//			int o = 1;
+//			n = JOptionPane.showConfirmDialog(null, "A new version of this script is available!\n"
+//			        + "Would you like to download new version?", "Update available", JOptionPane.YES_NO_OPTION);
+//			System.out.println(n); // yes 0, no 1.
+//			if (n == 0) {
+//				o = JOptionPane.showConfirmDialog(null, "You will now be sent to powerbot.org\n"
+//				        + "to download the latest version.", "Update available", JOptionPane.OK_CANCEL_OPTION);
+//			}
+//			if (o == 0)
+//				sendToURL("http://goo.gl/WEQX6");
+//
+//		} else {
+//			log(Color.GREEN, "The script is up to date!");
+//		}
 		try {
 			SwingUtilities.invokeAndWait(new Runnable() {
 				public void run() {
@@ -580,6 +579,7 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 							camera.turnTo(shopKeeper);
 						}
 					}
+					return 0;
 				}
 				return chopTree(30, 20, willowTreeTile2, "Willow", willowID);
 			case WILLOWRIMM:
@@ -766,6 +766,14 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 	}
 
 	private int checkStuff() {
+		if (screenShot == null && screenshotTimer != 0) {
+			screenShot = new Timer(screenshotTimer);
+		}
+		if (screenShot != null && !screenShot.isRunning() && screenshotTimer != 0) {
+			log("Taking screenshot.");
+			env.saveScreenshot(true);
+			screenShot = new Timer(screenshotTimer);
+		}
 		if (!checkedGE) {
 			try {
 				oakPrice = grandExchange.lookup("Oak logs").getGuidePrice();
@@ -893,7 +901,7 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 				dots = dots + ".";
 			}
 		}
-    }
+	}
 
 	@Override
 	public void mouseEntered(MouseEvent arg0) {
@@ -909,6 +917,10 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 
 	@Override
 	public void onFinish() {
+		if (takeScreenshotOnFinish) {
+			log("Taking screenshot.");
+			env.saveScreenshot(false);
+		}
 		log(Color.BLUE, "Thanks for using my script, please leave your feedback on my thread.");
 		frame.dispose();
 	}
@@ -917,8 +929,8 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 		RSWeb walkWeb = null;
 		try {
 			walkWeb = web.getWeb(dest);
-		} catch (SecurityException e) {
-			log("SecurityException.");
+		} catch (Exception e) {
+			log("Exception: " + e);
 		}
 		if (bobsArea.contains(myLocation())) {
 			RSObject door = objects.getTopAt(new RSTile(3234, 3203, 0));
@@ -932,6 +944,7 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 					chill();
 				}
 			}
+			return;
 		}
 		if (adviserHouse.contains(myLocation())) {
 			RSObject door1 = objects.getTopAt(new RSTile(3228, 3240));
@@ -945,27 +958,29 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 					chill();
 				}
 			}
+			return;
 		}
 		if (walkWeb != null) {
 			if (!getMyPlayer().isMoving() || calc.distanceTo(walking.getDestination()) < 5) {
 				walkWeb.step();
 			}
-		} else if (objects.getNearest(45476) != null && calc.distanceTo(objects.getNearest(45476)) < 7) {
-			log("Possibly trapped. Opening door");
-			RSObject door = objects.getNearest(45476);
-			if (door.isOnScreen()) {
-				if (door.interact("Open")) {
-					chill();
-					walking.walkTileMM(dest);
-				}
-			} else {
-				walking.walkTileMM(door.getLocation());
-			}
-			chill();
 		} else {
-			log("Web is null, using backup walking method");
 			walking.walkTileMM(dest);
-			chill();
+			sleep(1000);
+			if (!getMyPlayer().isMoving()) {
+				RSObject door = objects.getNearest(45476);
+				if (door != null && calc.distanceTo(objects.getNearest(45476)) < 7) {
+					if (door.isOnScreen()) {
+						if (door.interact("Open")) {
+							chill();
+							walking.walkTileMM(dest);
+						}
+					} else {
+						camera.turnTo(door);
+					}
+					chill();
+				}
+			}
 		}
 	}
 
@@ -1257,19 +1272,19 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 		return false;
 	}
 
-	public boolean isTileFree(RSTile t) { // TODO Can you Firemake on any object?
+	public boolean isTileFree(RSTile t) {
 		RSObject[] objs = objects.getAllAt(t);
 		if (objs.length == 0) {
 			return true;
 		}
-		for (RSObject r : objs) {
-			if (r.getID() == 2732) {
-				break;
-			}
-			if (r == objs[objs.length - 1]) {
-				return true;
-			}
-		}
+//		for (RSObject r : objs) {
+//			if (r.getID() == 2732) {
+//				break;
+//			}
+//			if (r == objs[objs.length - 1]) {
+//				return true;
+//			}
+//		}
 		return false;
 	}
 
@@ -1403,7 +1418,6 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 		try {
 			java.awt.Desktop.getDesktop().browse(java.net.URI.create(url));
 		} catch (Exception e) {
-			System.out.println("Error:" + e.getLocalizedMessage());
 		}
 	}
 
@@ -1515,9 +1529,9 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 			if (antiBan.length() > 0) {
 				g.setFont(font2);
 				g.setColor(color5);
-				g.fillRect(315, 350, 200, g.getFontMetrics().stringWidth("Antiban: " + antiBan) + 2);
+				g.fillRect(315, 350, g.getFontMetrics().stringWidth("Antiban: " + antiBan) + 3, 15);
 				g.setColor(color6);
-				g.drawRect(315, 350, 200, g.getFontMetrics().stringWidth("Antiban: " + antiBan) + 2);
+				g.drawRect(315, 350, g.getFontMetrics().stringWidth("Antiban: " + antiBan) + 3, 15);
 				g.drawString("Antiban: " + antiBan, 317, 360);
 			}
 			g.setFont(font3);
@@ -1652,6 +1666,10 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 	int willowLocation = 0;
 	int treeLocation = 0;
 	int yewLocation = 0;
+	boolean takeScreenshotsEvery = false;
+	boolean takeScreenshotOnFinish = false;
+	boolean takeScreenshotOnLevel = false;
+	long screenshotTimer = 0;
 
 	boolean useAvailableHatchets = false;
 	boolean checkedBank = false;
@@ -1677,15 +1695,29 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 			afterXFM = comboBox5.getSelectedIndex(); // Train wc, stop script
 			after60WC = comboBox1.getSelectedIndex();
 			useAvailableHatchets = radioButton2.isSelected();
-
 			oakLocation = comboBox7.getSelectedIndex();
 			// North East Draynor, EastDraynor, North Draynor
 			willowLocation = comboBox8.getSelectedIndex();
-			// Lumbridge, Rimmington
+			// Rimmington, Lumbridge, Port Sarim
 			treeLocation = comboBox6.getSelectedIndex();
 			// Lumbridge
 			yewLocation = comboBox10.getSelectedIndex();
-			// Lumbridge, Rimmington, Falador
+			// Rimmington, Lumbridge, Port Sarim
+			if (checkBox2.isSelected()) {
+				int idx = comboBox2.getSelectedIndex();
+				if (idx == 0)
+					screenshotTimer = 1800000;
+				else if (idx == 1)
+					screenshotTimer = 3600000;
+				else if (idx == 2)
+					screenshotTimer = 7200000;
+				else if (idx == 3)
+					screenshotTimer = 10800000;
+				else
+					screenshotTimer = 0;
+			}
+			takeScreenshotOnFinish = checkBox3.isSelected();
+			takeScreenshotOnLevel = checkBox4.isSelected();
 		}
 
 		private void checkBox1ActionPerformed(ActionEvent e) {
@@ -1740,6 +1772,14 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 			}
 		}
 
+		private void checkBox2ActionPerformed(ActionEvent e) {
+			if (checkBox2.isSelected()) {
+				comboBox2.setEnabled(true);
+			} else {
+				comboBox2.setEnabled(false);
+			}
+		}
+
 		private void initComponents() {
 			button3 = new JButton();
 			panel3 = new JPanel();
@@ -1766,6 +1806,11 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 			comboBox7 = new JComboBox();
 			comboBox8 = new JComboBox();
 			comboBox10 = new JComboBox();
+			panel4 = new JPanel();
+			checkBox2 = new JCheckBox();
+			checkBox3 = new JCheckBox();
+			comboBox2 = new JComboBox();
+			checkBox4 = new JCheckBox();
 			panel2 = new JPanel();
 			label10 = new JLabel();
 			button2 = new JButton();
@@ -1778,34 +1823,33 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 			label1 = new JLabel();
 			button1 = new JButton();
 
-			// ======== this ========
+			//======== this ========
 			setTitle("Dynamic Woodcutter Options");
 			setBackground(Color.darkGray);
 			setForeground(Color.black);
 			Container contentPane = getContentPane();
 
-			// ---- button3 ----
+			//---- button3 ----
 			button3.setEnabled(false);
 			button3.setVisible(false);
 			button3.setBackground(Color.darkGray);
 
-			// ======== panel3 ========
+			//======== panel3 ========
 			{
 				panel3.setBackground(Color.darkGray);
-
-				// ======== tabbedPane4 ========
+				//======== tabbedPane4 ========
 				{
 					tabbedPane4.setBackground(Color.darkGray);
 
-					// ======== panel5 ========
+					//======== panel5 ========
 					{
 						panel5.setBackground(Color.darkGray);
 
-						// ---- label2 ----
+						//---- label2 ----
 						label2.setText("Stop at");
 						label2.setBackground(Color.darkGray);
 
-						// ---- textField1 ----
+						//---- textField1 ----
 						textField1.setText("100");
 						textField1.setBackground(Color.darkGray);
 						textField1.addKeyListener(new KeyAdapter() {
@@ -1815,20 +1859,20 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 							}
 						});
 
-						// ---- label3 ----
+						//---- label3 ----
 						label3.setText("Woodcutting");
 						label3.setBackground(Color.darkGray);
 
-						// ---- label4 ----
+						//---- label4 ----
 						label4.setText("After 60 Woodcutting");
 						label4.setBackground(Color.darkGray);
 
-						// ---- comboBox1 ----
+						//---- comboBox1 ----
 						comboBox1.setModel(new DefaultComboBoxModel(new String[] { "Cut Willows", "Stop script",
 						        "Cut Yews" }));
 						comboBox1.setBackground(Color.darkGray);
 
-						// ---- checkBox1 ----
+						//---- checkBox1 ----
 						checkBox1.setText("Train Firemaking?");
 						checkBox1.setBackground(Color.darkGray);
 						checkBox1.addActionListener(new ActionListener() {
@@ -1838,27 +1882,27 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 							}
 						});
 
-						// ---- label8 ----
+						//---- label8 ----
 						label8.setText("After");
 						label8.setEnabled(false);
 						label8.setBackground(Color.darkGray);
 
-						// ---- textField2 ----
+						//---- textField2 ----
 						textField2.setText("100");
 						textField2.setEnabled(false);
 						textField2.setBackground(Color.darkGray);
 
-						// ---- label9 ----
+						//---- label9 ----
 						label9.setText("Firemaking");
 						label9.setEnabled(false);
 						label9.setBackground(Color.darkGray);
 
-						// ---- comboBox5 ----
+						//---- comboBox5 ----
 						comboBox5.setModel(new DefaultComboBoxModel(new String[] { "Train WC", "Stop script" }));
 						comboBox5.setEnabled(false);
 						comboBox5.setBackground(Color.darkGray);
 
-						// ---- radioButton1 ----
+						//---- radioButton1 ----
 						radioButton1.setText("Obtain hatchets independently");
 						radioButton1.setEnabled(true);
 						radioButton1.setSelected(true);
@@ -1870,7 +1914,7 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 							}
 						});
 
-						// ---- radioButton2 ----
+						//---- radioButton2 ----
 						radioButton2.setText("Use available hatchets");
 						radioButton2.setEnabled(true);
 						radioButton2.setBackground(Color.darkGray);
@@ -1885,87 +1929,80 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 						panel5.setLayout(panel5Layout);
 						panel5Layout.setHorizontalGroup(panel5Layout.createParallelGroup().addGroup(
 						    panel5Layout.createSequentialGroup().addContainerGap().addGroup(
-						        panel5Layout.createParallelGroup().addGroup(
-						            panel5Layout.createSequentialGroup().addComponent(radioButton2,
-						                GroupLayout.PREFERRED_SIZE, 177, GroupLayout.PREFERRED_SIZE).addContainerGap())
-						            .addGroup(
+						        panel5Layout.createParallelGroup().addComponent(radioButton2,
+						            GroupLayout.PREFERRED_SIZE, 177, GroupLayout.PREFERRED_SIZE)
+						            .addComponent(checkBox1).addGroup(
+						                panel5Layout.createSequentialGroup().addComponent(label2).addPreferredGap(
+						                    LayoutStyle.ComponentPlacement.UNRELATED).addComponent(textField1,
+						                    GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE)
+						                    .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED).addComponent(
+						                        label3)).addGroup(
+						                panel5Layout.createSequentialGroup().addComponent(label4).addPreferredGap(
+						                    LayoutStyle.ComponentPlacement.UNRELATED).addComponent(comboBox1,
+						                    GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+						                    GroupLayout.PREFERRED_SIZE)).addComponent(radioButton1,
+						                GroupLayout.PREFERRED_SIZE, 216, GroupLayout.PREFERRED_SIZE).addGroup(
+						                panel5Layout.createSequentialGroup().addComponent(label8).addPreferredGap(
+						                    LayoutStyle.ComponentPlacement.RELATED).addComponent(textField2,
+						                    GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE).addGap(10, 10,
+						                    10).addComponent(label9).addPreferredGap(
+						                    LayoutStyle.ComponentPlacement.UNRELATED).addComponent(comboBox5,
+						                    GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+						                    GroupLayout.PREFERRED_SIZE))).addContainerGap(56, Short.MAX_VALUE)));
+						panel5Layout
+						    .setVerticalGroup(panel5Layout.createParallelGroup().addGroup(
+						        panel5Layout.createSequentialGroup().addGap(6, 6, 6).addComponent(radioButton1).addGap(
+						            5, 5, 5).addComponent(radioButton2).addPreferredGap(
+						            LayoutStyle.ComponentPlacement.UNRELATED).addGroup(
+						            panel5Layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(
+						                textField1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+						                GroupLayout.PREFERRED_SIZE).addComponent(label2).addComponent(label3))
+						            .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED).addGroup(
+						                panel5Layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(
+						                    label4).addComponent(comboBox1, GroupLayout.PREFERRED_SIZE,
+						                    GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addGap(11, 11, 11)
+						            .addComponent(checkBox1).addGap(18, 18, 18).addGroup(
 						                panel5Layout.createParallelGroup().addGroup(
-						                    panel5Layout.createSequentialGroup().addComponent(checkBox1)
-						                        .addContainerGap()).addGroup(
-						                    panel5Layout.createParallelGroup().addGroup(
-						                        panel5Layout.createSequentialGroup().addGroup(
-						                            panel5Layout.createParallelGroup().addGroup(
-						                                panel5Layout.createSequentialGroup().addComponent(label2)
-						                                    .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-						                                    .addComponent(textField1, GroupLayout.DEFAULT_SIZE, 41,
-						                                        Short.MAX_VALUE).addPreferredGap(
-						                                        LayoutStyle.ComponentPlacement.RELATED).addComponent(
-						                                        label3).addGap(43, 43, 43)).addGroup(
-						                                panel5Layout.createSequentialGroup().addComponent(label4)
-						                                    .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
-						                                    .addComponent(comboBox1, GroupLayout.PREFERRED_SIZE,
-						                                        GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
-						                            .addGap(95, 95, 95)).addGroup(
-						                        panel5Layout.createSequentialGroup().addComponent(label8).addGap(5, 5,
-						                            5).addComponent(textField2, GroupLayout.PREFERRED_SIZE,
-						                            GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addGap(6, 6,
-						                            6).addComponent(label9).addGap(9, 9, 9).addComponent(comboBox5,
+						                    panel5Layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+						                        .addComponent(label8).addComponent(textField2,
 						                            GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						                            GroupLayout.PREFERRED_SIZE).addContainerGap(76, Short.MAX_VALUE))))
-						            .addGroup(
-						                panel5Layout.createSequentialGroup().addComponent(radioButton1,
-						                    GroupLayout.PREFERRED_SIZE, 216, GroupLayout.PREFERRED_SIZE)
-						                    .addContainerGap()))));
-						panel5Layout.setVerticalGroup(panel5Layout.createParallelGroup().addGroup(
-						    panel5Layout.createSequentialGroup().addGap(6, 6, 6).addComponent(radioButton1).addGap(5,
-						        5, 5).addComponent(radioButton2).addPreferredGap(
-						        LayoutStyle.ComponentPlacement.UNRELATED).addGroup(
-						        panel5Layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(
-						            textField1).addComponent(label2).addComponent(label3)).addPreferredGap(
-						        LayoutStyle.ComponentPlacement.UNRELATED).addGroup(
-						        panel5Layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(label4)
-						            .addComponent(comboBox1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						                GroupLayout.PREFERRED_SIZE)).addGap(11, 11, 11).addComponent(checkBox1).addGap(
-						        18, 18, 18).addGroup(
-						        panel5Layout.createParallelGroup().addGroup(
-						            panel5Layout.createSequentialGroup().addGap(5, 5, 5).addComponent(label8))
-						            .addComponent(textField2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						                GroupLayout.PREFERRED_SIZE).addGroup(
-						                panel5Layout.createSequentialGroup().addGap(5, 5, 5).addComponent(label9))
-						            .addComponent(comboBox5, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						                GroupLayout.PREFERRED_SIZE)).addGap(56, 56, 56)));
+						                            GroupLayout.PREFERRED_SIZE)).addGroup(
+						                    panel5Layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+						                        .addComponent(label9).addComponent(comboBox5,
+						                            GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+						                            GroupLayout.PREFERRED_SIZE))).addGap(56, 56, 56)));
 					}
 					tabbedPane4.addTab("Training", panel5);
 
-					// ======== panel1 ========
+					//======== panel1 ========
 					{
 						panel1.setBackground(Color.darkGray);
 
-						// ---- label12 ----
+						//---- label12 ----
 						label12.setText("Tree:");
 
-						// ---- label13 ----
+						//---- label13 ----
 						label13.setText("Oak:");
 
-						// ---- label14 ----
+						//---- label14 ----
 						label14.setText("Willow:");
 
-						// ---- label15 ----
+						//---- label15 ----
 						label15.setText("Yew:");
 
-						// ---- comboBox6 ----
+						//---- comboBox6 ----
 						comboBox6.setModel(new DefaultComboBoxModel(new String[] { "Lumbridge" }));
 
-						// ---- comboBox7 ----
+						//---- comboBox7 ----
 						comboBox7.setModel(new DefaultComboBoxModel(new String[] { "North East Draynor",
 						        "East Draynor", "North Draynor" }));
 
-						// ---- comboBox8 ----
-						comboBox8.setModel(new DefaultComboBoxModel(new String[] { "Lumbridge", "Rimmington",
+						//---- comboBox8 ----
+						comboBox8.setModel(new DefaultComboBoxModel(new String[] { "Rimmington", "Lumbridge",
 						        "Port Sarim" }));
 
-						// ---- comboBox10 ----
-						comboBox10.setModel(new DefaultComboBoxModel(new String[] { "Lumbridge", "Rimmington",
+						//---- comboBox10 ----
+						comboBox10.setModel(new DefaultComboBoxModel(new String[] { "Rimmington", "Lumbridge",
 						        "Port Sarim" }));
 
 						GroupLayout panel1Layout = new GroupLayout(panel1);
@@ -1982,7 +2019,7 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 						                GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
 						                GroupLayout.PREFERRED_SIZE)).addContainerGap(57, Short.MAX_VALUE)));
 						panel1Layout.setVerticalGroup(panel1Layout.createParallelGroup().addGroup(
-						    panel1Layout.createSequentialGroup().addGap(23, 23, 23).addGroup(
+						    panel1Layout.createSequentialGroup().addGap(63, 63, 63).addGroup(
 						        panel1Layout.createParallelGroup(GroupLayout.Alignment.TRAILING).addComponent(label12)
 						            .addComponent(comboBox6, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
 						                GroupLayout.PREFERRED_SIZE)).addGap(18, 18, 18).addGroup(
@@ -1994,20 +2031,72 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 						                GroupLayout.PREFERRED_SIZE)).addGap(18, 18, 18).addGroup(
 						        panel1Layout.createParallelGroup(GroupLayout.Alignment.TRAILING).addComponent(label15)
 						            .addComponent(comboBox10, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						                GroupLayout.PREFERRED_SIZE)).addContainerGap(86, Short.MAX_VALUE)));
+						                GroupLayout.PREFERRED_SIZE)).addContainerGap(68, Short.MAX_VALUE)));
 					}
 					tabbedPane4.addTab("Locations", panel1);
 
-					// ======== panel2 ========
+					//======== panel4 ========
+					{
+						panel4.setBackground(Color.darkGray);
+
+						//---- checkBox2 ----
+						checkBox2.setText("Take screenshots every");
+						checkBox2.setBackground(Color.darkGray);
+						checkBox2.addActionListener(new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent e) {
+								checkBox2ActionPerformed(e);
+							}
+						});
+
+						//---- checkBox3 ----
+						checkBox3.setText("Take screenshot on finish");
+						checkBox3.setBackground(Color.darkGray);
+
+						//---- comboBox2 ----
+						comboBox2.setModel(new DefaultComboBoxModel(new String[] { "30 Minutes", "Hour", "2 Hours",
+						        "3 Hours" }));
+						comboBox2.setBackground(Color.darkGray);
+						comboBox2.setEnabled(false);
+
+						//---- checkBox4 ----
+						checkBox4.setText("Take screenshot on level");
+						checkBox4.setBackground(Color.darkGray);
+
+						GroupLayout panel4Layout = new GroupLayout(panel4);
+						panel4.setLayout(panel4Layout);
+						panel4Layout.setHorizontalGroup(panel4Layout.createParallelGroup().addGroup(
+						    panel4Layout.createSequentialGroup().addContainerGap().addGroup(
+						        panel4Layout.createParallelGroup().addGroup(
+						            panel4Layout.createSequentialGroup().addComponent(checkBox2,
+						                GroupLayout.DEFAULT_SIZE, 146, Short.MAX_VALUE).addGap(18, 18, 18)
+						                .addComponent(comboBox2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
+						                    GroupLayout.PREFERRED_SIZE).addGap(35, 35, 35)).addGroup(
+						            panel4Layout.createSequentialGroup().addComponent(checkBox3,
+						                GroupLayout.PREFERRED_SIZE, 165, GroupLayout.PREFERRED_SIZE).addContainerGap(
+						                111, Short.MAX_VALUE)).addGroup(
+						            panel4Layout.createSequentialGroup().addComponent(checkBox4).addContainerGap(131,
+						                Short.MAX_VALUE)))));
+						panel4Layout.setVerticalGroup(panel4Layout.createParallelGroup().addGroup(
+						    panel4Layout.createSequentialGroup().addGap(32, 32, 32).addGroup(
+						        panel4Layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+						            .addComponent(checkBox2).addComponent(comboBox2, GroupLayout.PREFERRED_SIZE,
+						                GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addGap(18, 18, 18)
+						        .addComponent(checkBox3).addGap(18, 18, 18).addComponent(checkBox4).addContainerGap(
+						            128, Short.MAX_VALUE)));
+					}
+					tabbedPane4.addTab("Other", panel4);
+
+					//======== panel2 ========
 					{
 						panel2.setBackground(Color.darkGray);
 
-						// ---- label10 ----
+						//---- label10 ----
 						label10.setText("Dynamic Woodcutter");
 						label10.setFont(label10.getFont().deriveFont(label10.getFont().getSize() + 8f));
 						label10.setBackground(Color.darkGray);
 
-						// ---- button2 ----
+						//---- button2 ----
 						button2.setText("Go to thread");
 						button2.setBackground(Color.darkGray);
 						button2.addActionListener(new ActionListener() {
@@ -2017,38 +2106,38 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 							}
 						});
 
-						// ---- label11 ----
+						//---- label11 ----
 						label11.setText("Current version:");
 						label11.setFont(label11.getFont().deriveFont(label11.getFont().getSize() + 1f));
 						label11.setBackground(Color.darkGray);
 
-						// ---- label16 ----
+						//---- label16 ----
 						label16.setText("Latest version:");
 						label16.setFont(label16.getFont().deriveFont(label16.getFont().getSize() + 1f));
 						label16.setBackground(Color.darkGray);
 
-						// ---- label17 ----
+						//---- label17 ----
 						label17.setFont(label17.getFont().deriveFont(label17.getFont().getSize() + 1f));
 						label17.setBackground(Color.darkGray);
 						label17.setText(Double.toString(scriptVersion));
 
-						// ---- label18 ----
+						//---- label18 ----
 						label18.setFont(label18.getFont().deriveFont(label18.getFont().getSize() + 1f));
 						label18.setBackground(Color.darkGray);
 						label18.setText(Double.toString(currVer));
 
-						// ======== scrollPane1 ========
+						//======== scrollPane1 ========
 						{
 							scrollPane1.setBackground(Color.darkGray);
 
-							// ---- textArea1 ----
+							//---- textArea1 ----
 							textArea1.setWrapStyleWord(true);
 							textArea1.setLineWrap(true);
 							textArea1
 							    .setText("Thanks for using Dynamic Woodcutter please leave feedback on my thread. ~hlunnb");
 							textArea1.setEditable(false);
-							textArea1.setBackground(Color.darkGray);
-							textArea1.setFont(textArea1.getFont().deriveFont(textArea1.getFont().getSize() + 5f));
+							textArea1.setBackground(Color.white);
+							textArea1.setFont(textArea1.getFont().deriveFont(textArea1.getFont().getSize() + 1f));
 							scrollPane1.setViewportView(textArea1);
 						}
 
@@ -2079,18 +2168,18 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 						                label11).addComponent(label17)).addGap(18, 18, 18).addGroup(
 						            panel2Layout.createParallelGroup(GroupLayout.Alignment.TRAILING).addComponent(
 						                label16).addComponent(label18)).addPreferredGap(
-						            LayoutStyle.ComponentPlacement.RELATED, 13, Short.MAX_VALUE).addComponent(button2)
+						            LayoutStyle.ComponentPlacement.RELATED, 35, Short.MAX_VALUE).addComponent(button2)
 						        .addContainerGap()));
 					}
 					tabbedPane4.addTab("About", panel2);
 
 				}
 
-				// ---- label1 ----
+				//---- label1 ----
 				label1.setText("<html><img src=\"http://i.imgur.com/9MfV2.png\"></img> ");
 				label1.setBackground(Color.darkGray);
 
-				// ---- button1 ----
+				//---- button1 ----
 				button1.setText("Start");
 				button1.setBackground(Color.darkGray);
 				button1.addActionListener(new ActionListener() {
@@ -2160,6 +2249,11 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 		private JComboBox comboBox7;
 		private JComboBox comboBox8;
 		private JComboBox comboBox10;
+		private JPanel panel4;
+		private JCheckBox checkBox2;
+		private JCheckBox checkBox3;
+		private JComboBox comboBox2;
+		private JCheckBox checkBox4;
 		private JPanel panel2;
 		private JLabel label10;
 		private JButton button2;
@@ -3342,7 +3436,7 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 				default:
 					break;
 			}
-			timer = System.currentTimeMillis() + random(2000, 10000);
+			timer = System.currentTimeMillis() + random(5000, 15000);
 		}
 		antiBan = "";
 	}
@@ -3382,18 +3476,38 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 	public void messageReceived(MessageEvent e) {
 		String m = e.getMessage();
 		if (m.contains("just advanced a Firemaking")) {
+			if (takeScreenshotOnLevel) {
+				env.saveScreenshot(true);
+				log("Taking screenshot.");
+			}
 			levelsGained2++;
 		}
 		if (m.contains("just advanced a Woodcutting")) {
+			if (takeScreenshotOnLevel) {
+				env.saveScreenshot(true);
+				log("Taking screenshot.");
+			}
 			levelsGained++;
 		}
 		if (m.contains("just advanced 2 Wood")) {
+			if (takeScreenshotOnLevel) {
+				env.saveScreenshot(true);
+				log("Taking screenshot.");
+			}
 			levelsGained += 2;
 		}
 		if (m.contains("just advanced 3 Wood")) {
+			if (takeScreenshotOnLevel) {
+				env.saveScreenshot(true);
+				log("Taking screenshot.");
+			}
 			levelsGained += 3;
 		}
 		if (m.contains("just advanced 4 Wood")) {
+			if (takeScreenshotOnLevel) {
+				env.saveScreenshot(true);
+				log("Taking screenshot.");
+			}
 			levelsGained += 4;
 		}
 		if (m.contains("can't light a fire")) {
@@ -3402,9 +3516,9 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 		if (m.contains("the ladder has been completely destroyed")) {
 			sawLamp = true;
 		}
-//		if (m.contains("Ramsey, is that you?")) {
-//			keyboard.sendText("Shh.", true);
-//		}
+		//		if (m.contains("Ramsey, is that you?")) {
+		//			keyboard.sendText("Shh.", true);
+		//		}
 	}
 
 	public State getState() {
@@ -3530,11 +3644,11 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 		if (wcLvl() >= 30) {
 			if (willowLocation == 0) {
 				status = "Willows";
-				return State.WILLOWLUMB;
+				return State.WILLOWRIMM;
 			}
 			if (willowLocation == 1) {
 				status = "Willows";
-				return State.WILLOWRIMM;
+				return State.WILLOWLUMB;
 			}
 			if (willowLocation == 2) {
 				status = "Willows";
