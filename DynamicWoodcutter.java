@@ -1,20 +1,18 @@
 import java.awt.BasicStroke;
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.Container;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -22,22 +20,8 @@ import java.text.DecimalFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.GroupLayout;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
-import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.LayoutStyle;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
+import javax.imageio.ImageIO;
+
 import org.rsbot.event.events.MessageEvent;
 import org.rsbot.event.listeners.MessageListener;
 import org.rsbot.event.listeners.PaintListener;
@@ -47,6 +31,7 @@ import org.rsbot.script.ScriptManifest;
 import org.rsbot.script.methods.Bank;
 import org.rsbot.script.methods.GrandExchange;
 import org.rsbot.script.methods.Skills;
+import org.rsbot.script.methods.Magic.Spell;
 import org.rsbot.script.util.Timer;
 import org.rsbot.script.wrappers.RSArea;
 import org.rsbot.script.wrappers.RSGroundItem;
@@ -58,8 +43,8 @@ import org.rsbot.script.wrappers.RSPath;
 import org.rsbot.script.wrappers.RSTile;
 import org.rsbot.script.wrappers.RSWeb;
 
-@ScriptManifest(website = "http://goo.gl/WEQX6", authors = { "hlunnb" }, keywords = { "Woodcutting, Firemaking" }, name = "Dynamic Woodcutter", version = 1.66, description = "Independently trains Woodcutting and Firemaking from a low level.")
-public class DynamicWoodcutter extends Script implements PaintListener, MouseListener, MessageListener {
+@ScriptManifest(website = "http://goo.gl/WEQX6", authors = { "hlunnb" }, keywords = { "Woodcutting, Firemaking" }, name = "Dynamic Woodcutter", version = 1.71, description = "Independently trains Woodcutting and Firemaking from a low level.")
+public class DynamicWoodcutter extends Script implements PaintListener, MouseListener, MouseMotionListener, MessageListener {
 
 	final RSArea adviserHouse = new RSArea(new RSTile(3229, 3236), new RSTile(3232, 3241));
 	final RSArea bobsArea = new RSArea(new RSTile(3227, 3201), new RSTile(3233, 3205));
@@ -71,6 +56,7 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 	final RSTile willowTreeTile = new RSTile(2971, 3195); // Rimm
 	final RSTile willowTreeTile2 = new RSTile(3165, 3272); // Lumb
 	final RSTile willowTreeTile3 = new RSTile(3060, 3254); // Port Sarim
+	final RSTile willowTreeTile4 = new RSTile(3086, 3233); // Dray
 	final RSTile yewTreeTile = new RSTile(2930, 3229);// Rimm
 	final RSTile yewTreeTile2 = new RSTile(3166, 3234); // Lumb
 	final RSTile yewTreeTile3 = new RSTile(3048, 3270); // Port Sarim
@@ -130,6 +116,8 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 	final int willowLogID = 1519;
 	final int yewLogID = 1515;
 	final int notedOakLogs = 1522;
+	final int[] moveIDs = { bronzeHatchetID, ironHatchetID, steelHatchetID, blackHatchetID, mithrilHatchetID,
+	        adamantHatchetID, runeHatchetID, 995, tinderboxID };
 	final int[] logID = { regularLogID, oakLogID, willowLogID, yewLogID };
 	final int[] dontDropIDs = { regularLogID, oakLogID, willowLogID, yewLogID, 995, bronzeHatchetID, ironHatchetID,
 	        steelHatchetID, blackHatchetID, mithrilHatchetID, adamantHatchetID, runeHatchetID, notedOakLogs, 13439,
@@ -140,7 +128,8 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 	final RSTile[] logStart = { new RSTile(3199, 3243), new RSTile(3199, 3244), new RSTile(3199, 3245),
 	        new RSTile(3199, 3246), new RSTile(3196, 3237), new RSTile(3202, 3236) };
 	final RSTile[] oakStart = { new RSTile(3093, 3288), new RSTile(3093, 3290), new RSTile(3093, 3289),
-	        new RSTile(3106, 3273), new RSTile(3118, 3263) };
+	        new RSTile(3106, 3273), new RSTile(3118, 3263), new RSTile(3105, 3249), new RSTile(3105, 3250),
+	        new RSTile(3101, 3248) };
 	final RSTile[] willowStartRimm = { new RSTile(2968, 3194), new RSTile(2968, 3193), new RSTile(2968, 3192),
 	        new RSTile(2968, 3199), new RSTile(2968, 3200) };
 	final RSTile[] willowStartLumb = { new RSTile(3199, 3243), new RSTile(3199, 3244), new RSTile(3199, 3245),
@@ -151,7 +140,7 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 
 	final int[] treeID = { 38782, 38783, 38784, 38785, 38786, 38787, 38788, 38760 };
 	final int[] oakID = { 38731, 38732 };
-	final int[] willowID = { 38616, 38627, 38616 };
+	final int[] willowID = { 38616, 38627, 38616, 58006 };
 	final int[] yewID = { 38755 };
 
 	int runeHatchetPrice = -1;
@@ -160,17 +149,12 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 	int bankCash = 0;
 	int oakCash = 0;
 	int oakPrice = -1;
-	int trips = 0;
-	int maxTrips = random(5, 10);
 
 	boolean checkBank = false;
 	boolean useBank = false;
 	boolean needTutoring = false;
 	String status = "";
 	String antiBan = "";
-	boolean collectFromSlots1 = false;
-	boolean collectFromSlots2 = false;
-	boolean done = false;
 	boolean offeredOaks = false;
 	boolean sawLamp = false;
 
@@ -182,10 +166,9 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 	boolean end = false;
 	boolean sentOffer = false;
 	boolean showPaint = false;
-	boolean showNotice = false;
 	boolean checkedGE = false;
 	long startTime;
-	long timer;
+	long antibanTimer;
 	long timer2;
 	long clickTimer;
 	int levelsGained = 0;
@@ -197,61 +180,42 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 	private double scriptVersion = DynamicWoodcutter.class.getAnnotation(ScriptManifest.class).version();
 	private double currVer;
 
-	final Color color1 = new Color(0, 255, 100); // highlight
-	final Color color2 = new Color(51, 255, 51, 130); // back
-	final Color color3 = new Color(51, 255, 51, 200);
-	final Color color4 = new Color(255, 51, 51, 150); // red
-	final Color color5 = new Color(255, 255, 255, 69); // White
-	final Color color6 = new Color(0, 0, 0); // Black
-	final BasicStroke stroke1 = new BasicStroke(1);
-	final Font font1 = new Font("CordiaUPC", 0, 24);
-	final Font font2 = new Font("Arial", 0, 9);
-	final Font font3 = new Font("Arial", 0, 12);
-	int r = 0;
-	int b = 0;
-	int g = 0;
-	final Color MOUSE_BORDER_COLOR = new Color(225, 200, 25);
-	final Color MOUSE_COLOR = new Color(132, 198, 99);
-	String dots = "";
 	final Timer t = new Timer(200);
-	Timer screenShot = null;
+	Timer screenShot = new Timer(7200000);
+	Timer dropTimer = new Timer(1300);
+	Timer rpTimer = null;
 
-	GUI frame;
-	boolean guiWait = true;
+	boolean wait = true;
 	int fails = 0;
 
 	enum State {
-		BUYHATCHET, WC, TREE, OAK, WILLOWRIMM, WILLOWLUMB, WILLOWPORT, BUYRUNEHATCHET, CHECKBANK, GETUTOR, LAMPS, BURN, BUYTINDERBOX, YEW, error
+		BUYHATCHET, WC, TREE, OAK, WILLOWRIMM, WILLOWLUMB, WILLOWPORT, WILLOWDRAY, BUYRUNEHATCHET, CHECKBANK, GETUTOR, LAMPS, BURN, BUYTINDERBOX, YEW, error
 	}
 
 	@Override
 	public boolean onStart() {
-		mouse.setSpeed(5);
+		mouse.setSpeed(7);
 		currVer = getCurrentVersion();
-//		if (currVer > scriptVersion) {
-//			int n;
-//			int o = 1;
-//			n = JOptionPane.showConfirmDialog(null, "A new version of this script is available!\n"
-//			        + "Would you like to download new version?", "Update available", JOptionPane.YES_NO_OPTION);
-//			System.out.println(n); // yes 0, no 1.
-//			if (n == 0) {
-//				o = JOptionPane.showConfirmDialog(null, "You will now be sent to powerbot.org\n"
-//				        + "to download the latest version.", "Update available", JOptionPane.OK_CANCEL_OPTION);
-//			}
-//			if (o == 0)
-//				sendToURL("http://goo.gl/WEQX6");
-//
-//		} else {
-//			log(Color.GREEN, "The script is up to date!");
-//		}
-		try {
-			SwingUtilities.invokeAndWait(new Runnable() {
-				public void run() {
-					frame = new GUI();
-					frame.setVisible(true);
-				}
-			});
-		} catch (Throwable e) {}
+		if (scriptVersion >= currVer)
+			log(Color.green, "Your version: " + scriptVersion + ", Latest version: " + currVer
+			        + ". Your script is up to date.");
+		if (scriptVersion < currVer)
+			log(Color.red, "Your version: " + scriptVersion + ", Latest version: " + currVer
+			        + ". You should get the latest version.");
+		//		if (currVer > scriptVersion) {
+		//			int n;
+		//			int o = 1;
+		//			n = JOptionPane.showConfirmDialog(null, "A new version of this script is available!\n"
+		//			        + "Would you like to download new version?", "Update available", JOptionPane.YES_NO_OPTION);
+		//			if (n == 0) {
+		//				o = JOptionPane.showConfirmDialog(null, "You will now be sent to powerbot.org\n"
+		//				        + "to download the latest version.", "Update available", JOptionPane.OK_CANCEL_OPTION);
+		//			}
+		//			if (o == 0)
+		//				sendToURL("http://goo.gl/WEQX6");
+		//		} else {
+		//			log(Color.GREEN, "The script is up to date!");
+		//		}
 		return true;
 	}
 
@@ -274,6 +238,10 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 					}
 				}
 				if (!generalStoreArea.contains(myLocation())) {
+					if (calc.distanceTo(generalStoreTile) > 250 && !isAnimated()) {
+						magic.castSpell(Spell.LUMBRIDGE_HOME_TELEPORT);
+						return 2000;
+					}
 					webWalk(generalStoreTile);
 					return random(500, 1000);
 				}
@@ -434,7 +402,7 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 						}
 					}
 				}
-				return 200;
+				break;
 			case BUYHATCHET:
 				if (adviserHouse.contains(myLocation())) {
 					RSObject door1 = objects.getTopAt(new RSTile(3228, 3240));
@@ -486,6 +454,10 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 							return 0;
 						}
 					}
+					if (calc.distanceTo(bobsTile) > 250 && !isAnimated()) {
+						magic.castSpell(Spell.LUMBRIDGE_HOME_TELEPORT);
+						return 2000;
+					}
 					webWalk(bobsTile);
 					return random(500, 1000);
 				}
@@ -507,6 +479,10 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 						burnLogs = true;
 						findNewTile(start, false);
 						return 0;
+					}
+					if (drop) {
+						inventory.dropAll(logID);
+						return random(600, 800);
 					}
 					if (useBank) {
 						checkBank = true;
@@ -539,14 +515,18 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 						findNewTile(start, false);
 						return 0;
 					}
+					if (drop) {
+						inventory.dropAll(logID);
+						return random(600, 800);
+					}
 					checkBank = true;
 					return 0;
 				}
-				if (oakLocation == 0) {
+				if (oakLocation == 1) {
 					return chopTree(20, 10, oakTreeTile, "Oak", oakID);
-				} else if (oakLocation == 1) {
-					return chopTree(30, 20, oakTreeTile2, "Oak", oakID);
 				} else if (oakLocation == 2) {
+					return chopTree(30, 20, oakTreeTile2, "Oak", oakID);
+				} else if (oakLocation == 3) {
 					return chopTree(15, 6, oakTreeTile3, "Oak", oakID);
 				}
 				break;
@@ -560,6 +540,10 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 						burnLogs = true;
 						findNewTile(start, false);
 						return 0;
+					}
+					if (drop) {
+						inventory.dropAll(logID);
+						return random(600, 800);
 					}
 					if (useBank) {
 						checkBank = true;
@@ -592,6 +576,10 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 						burnLogs = true;
 						findNewTile(start, false);
 						return 0;
+					}
+					if (drop) {
+						inventory.dropAll(logID);
+						return random(600, 800);
 					}
 					if (useBank) {
 						checkBank = true;
@@ -635,21 +623,41 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 						findNewTile(start, true);
 						return 0;
 					}
+					if (drop) {
+						inventory.dropAll(logID);
+						return random(600, 800);
+					}
 					checkBank = true;
 					return 0;
 				}
 				return chopTree(25, 15, willowTreeTile3, "Willow", willowID);
+			case WILLOWDRAY:
+				if (inventory.isFull()) {
+					if (trainFM) {
+						start = oakStart;
+						burnLogs = true;
+						findNewTile(start, true);
+						return 0;
+					}
+					if (drop) {
+						inventory.dropAll(logID);
+						return random(600, 800);
+					}
+					checkBank = true;
+					return 0;
+				}
+				return chopTree(30, 20, willowTreeTile4, "Willow", willowID);
 			case YEW:
 				useBank = true; // Always bank Yew logs.
 				if (inventory.isFull()) {
 					checkBank = true;
 					return 0;
 				}
-				if (yewLocation == 0) {
-					return chopTree(45, 35, yewTreeTile, "Yew", yewID);
-				} else if (yewLocation == 1) {
-					return chopTree(25, 15, yewTreeTile2, "Yew", yewID);
+				if (yewLocation == 1) {
+					return chopTree(45, 30, yewTreeTile, "Yew", yewID);
 				} else if (yewLocation == 2) {
+					return chopTree(40, 30, yewTreeTile2, "Yew", yewID);
+				} else if (yewLocation == 3) {
 					return chopTree(25, 15, yewTreeTile3, "Yew", yewID);
 				}
 				break;
@@ -722,19 +730,18 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 						}
 					}
 					webWalk(new RSTile(3230, 3240, 0));
-					return random(500, 1000);
+					sleep(random(500, 1000));
 				}
-				if (adviserHouse.contains(myLocation())) {
-					if (downLadder != null) {
-						if (downLadder.isOnScreen()) {
-							downLadder.interact("Climb-down");
-						} else {
-							walking.walkTileOnScreen(downLadder.getLocation());
-						}
-						chill();
-						return 1000;
+				if (downLadder != null) {
+					if (downLadder.isOnScreen()) {
+						downLadder.interact("Climb-down");
+					} else {
+						camera.turnTo(downLadder.getLocation());
 					}
+					chill();
+					return 1000;
 				}
+
 				break;
 		} // end of switch
 		return random(300, 500);
@@ -766,36 +773,54 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 	}
 
 	private int checkStuff() {
-		if (screenShot == null && screenshotTimer != 0) {
-			screenShot = new Timer(screenshotTimer);
-		}
-		if (screenShot != null && !screenShot.isRunning() && screenshotTimer != 0) {
+		if (screenShot != null && !screenShot.isRunning()) {
 			log("Taking screenshot.");
 			env.saveScreenshot(true);
-			screenShot = new Timer(screenshotTimer);
+			screenShot = new Timer(7200000);
 		}
-		if (!checkedGE) {
-			try {
-				oakPrice = grandExchange.lookup("Oak logs").getGuidePrice();
-				runeHatchetPrice = grandExchange.lookup("Rune hatchet").getGuidePrice();
-			} catch (Exception e) {
-				oakPrice = 30; // Set lower.
-				runeHatchetPrice = 10000; // Set higher.
-				log.severe("Could not get Grand Exchange prices, script may not function properly.");
-			}
-			if (oakPrice != -1 && runeHatchetPrice != -1) {
-				log("Rune hatchet: " + runeHatchetPrice + ", " + "Oak price: " + oakPrice);
-				checkedGE = true;
+		if (!globeSelected) {
+			int wc = wcLvl();
+			if (trainFM) {
+				int fm = fmLvl();
+				if (fm >= 30) {
+					willowSelected = true;
+					treeSelected = false;
+					oakSelected = false;
+				} else if (fm >= 15) {
+					oakSelected = true;
+					treeSelected = false;
+					willowSelected = false;
+				} else {
+					treeSelected = true;
+					oakSelected = false;
+					willowSelected = false;
+				}
+			} else {
+				if (wc >= 60 && yewAfter60) {
+					yewSelected = true;
+					treeSelected = false;
+					oakSelected = false;
+					willowSelected = false;
+				} else if (wc >= 30) {
+					willowSelected = true;
+					treeSelected = false;
+					oakSelected = false;
+					yewSelected = false;
+				} else if (wc >= 15) {
+					oakSelected = true;
+					treeSelected = false;
+					willowSelected = false;
+					yewSelected = false;
+				} else {
+					treeSelected = true;
+					oakSelected = false;
+					willowSelected = false;
+					yewSelected = false;
+				}
 			}
 		}
 		if (initialXP == -1) {
-			if (game.getClientState() != 11) {
-				wasLoggedOut = true;
-				return 500;
-			}
-			if (game.getClientState() == 11) {
-				if (wasLoggedOut)
-					sleep(3000);
+			if (game.getClientState() == 11 && interfaces.get(137).isValid()) {
 				status = "";
 				initialXP = skills.getCurrentExp(Skills.WOODCUTTING);
 				initialXP2 = skills.getCurrentExp(Skills.FIREMAKING);
@@ -804,7 +829,24 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 				return 0;
 			}
 		}
-		if (guiWait) {
+		if (!checkedGE) {
+			try {
+				log("Getting prices from Grand Exchange.");
+				status = "Getting GE prices.";
+				oakPrice = grandExchange.lookup("Oak logs").getGuidePrice();
+				runeHatchetPrice = grandExchange.lookup("Rune hatchet").getGuidePrice();
+				checkedGE = true;
+				status = "";
+			} catch (Exception e) {
+				oakPrice = 30; // Set lower.
+				runeHatchetPrice = 10000; // Set higher.
+				log.severe("Could not get Grand Exchange prices, script may not function properly.");
+			}
+			if (oakPrice != -1 && runeHatchetPrice != -1) {
+				log("Rune hatchet: " + runeHatchetPrice + ", " + "Oak price: " + oakPrice);
+			}
+		}
+		if (wait) {
 			status = "Waiting" + dots;
 			startTime = System.currentTimeMillis();
 			manageDots();
@@ -842,7 +884,7 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 				r.interact("Drop");
 			}
 		}
-		if (interfaces.get(149).isValid()) { // TODO Unnecessary now?
+		if (interfaces.get(149).isValid()) {
 			log("Reading and closing level 10 solicitation message.");
 			sleep(random(1000, 2000)); // "Read" it.
 			if (!interfaces.get(149).getComponent(230).interact("Select")) {
@@ -903,26 +945,18 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 		}
 	}
 
-	@Override
 	public void mouseEntered(MouseEvent arg0) {
 	}
 
-	@Override
 	public void mouseExited(MouseEvent arg0) {
 	}
 
-	@Override
 	public void mouseReleased(MouseEvent arg0) {
 	}
 
 	@Override
 	public void onFinish() {
-		if (takeScreenshotOnFinish) {
-			log("Taking screenshot.");
-			env.saveScreenshot(false);
-		}
 		log(Color.BLUE, "Thanks for using my script, please leave your feedback on my thread.");
-		frame.dispose();
 	}
 
 	public void webWalk(RSTile dest) {
@@ -962,12 +996,14 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 		}
 		if (walkWeb != null) {
 			if (!getMyPlayer().isMoving() || calc.distanceTo(walking.getDestination()) < 5) {
-				walkWeb.step();
+				if (!walkWeb.step()) {
+					walking.walkTileMM(dest);
+				}
 			}
 		} else {
 			walking.walkTileMM(dest);
 			sleep(1000);
-			if (!getMyPlayer().isMoving()) {
+			if (!getMyPlayer().isMoving() && calc.distanceBetween(dest, getMyPlayer().getLocation()) > 2) {
 				RSObject door = objects.getNearest(45476);
 				if (door != null && calc.distanceTo(objects.getNearest(45476)) < 7) {
 					if (door.isOnScreen()) {
@@ -1052,13 +1088,17 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 					}
 				}
 				bestHatchetAvailable = bestHatchetAvailable();
-				if (bank.getItem("Coins") != null) {
-					bankCash = bank.getItem("Coins").getStackSize();
+				RSItem coins = bank.getItem("Coins");
+				if (coins != null) {
+					bankCash = coins.getStackSize();
 				} else {
 					bankCash = 0;
 				}
-				if (bank.getItem("Oak logs") != null) {
-					oakCash = bank.getItem("Oak logs").getStackSize() * oakPrice;
+				RSItem oaks = bank.getItem("Oak logs");
+				if (oaks != null) {
+					oakCash = oaks.getStackSize() * oakPrice;
+				} else {
+					oakCash = 0;
 				}
 				if (bestHatchetAvailable != -1 && bank.getItem(bestHatchetAvailable) != null
 				        && !inventory.contains(bestHatchetAvailable)) {
@@ -1101,8 +1141,25 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 	 *         in loop.
 	 */
 	public int chopTree(int farDist, int closeDist, RSTile t, String treeName, int[] treeID) {
-		if (isAnimated()) {
+		if (!powerchop && isAnimated()) {
 			antiBan();
+		}
+		if (powerchop) {
+			RSItem item1 = inventory.getItem(moveIDs);
+			int idx = item1.getComponent().getComponentIndex();
+			if (idx == 0 || idx == 1 || idx == 4 || idx == 5) {
+				int x = 24;
+				RSItem item2 = inventory.getItemAt(x);
+				checkIDs: for (int i : moveIDs) {
+					if (item2.getID() == i) {
+						x += 1;
+						item2 = inventory.getItemAt(x);
+						break checkIDs;
+					}
+				}
+				item1.getComponent().doHover();
+				mouse.drag(item2.getPoint());
+			}
 		}
 		if (calc.distanceTo(t) > farDist) {
 			webWalk(t);
@@ -1115,35 +1172,116 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 		if (calc.distanceTo(t) <= closeDist) {
 			RSObject tree = getNearestTree(treeID, t, closeDist);
 			if (tree != null) {
-				if ((treeID != oakID && treeID != yewID && calc.distanceTo(tree) > 1)
+				if (powerchop) {
+					if (clickTree) {
+						if (calc.tileOnScreen(tree.getLocation())) {
+							mouse.move(calc.tileToScreen(tree.getLocation()));
+							mouse.click(true);
+							clickTree = false;
+							dropTimer.reset();
+							return random(700, 1000);
+						}
+					}
+				}
+				if (!dropTimer.isRunning() && (treeID != oakID && treeID != yewID && calc.distanceTo(tree) > 1)
 				        || ((treeID == oakID || treeID == yewID) && calc.distanceTo(tree) > 2)) {
-					if (tree.isOnScreen()) {
+					if (calc.tileOnScreen(tree.getLocation())) {
 						if (tree.interact("Chop down " + treeName)) {
 							chill();
+							logCount = inventory.getCount(regularLogID, oakLogID, willowLogID);
+							clickTree = false;
 							return 0;
 						} else {
-							moveCamera(tree);
-							return 500;
+							moveCamera();
+							return 0;
 						}
 					} else {
 						walking.walkTileMM(tree.getLocation());
 						return random(800, 1500);
 					}
 				}
-				if (!isAnimated()) {
-					tree = getNearestTree(treeID, t, closeDist);
+				if (!isAnimated() && !dropTimer.isRunning()) {
 					if (tree.isOnScreen()) {
 						if (tree.interact("Chop down " + treeName)) {
 							chill();
+							logCount = inventory.getCount(regularLogID, oakLogID, willowLogID);
 							return 0;
 						} else {
-							moveCamera(tree);
-							return 500;
+							moveCamera();
+							return 0;
 						}
 					} else {
 						walking.walkTileMM(tree.getLocation());
 						return random(800, 1500);
 					}
+				}
+			} else if (calc.distanceTo(t) > 5) {
+				webWalk(t.randomize(3, 3));
+				return random(800, 1500);
+			}
+		}
+		if (powerchop) {
+			if (invLog == null || !invLog.hasAction("Drop")) {
+				invLog = inventory.getItem(regularLogID, oakLogID, willowLogID);
+			}
+			int logs = inventory.getCount(regularLogID, oakLogID, willowLogID);
+			if (logCount < logs && inventory.getCount(regularLogID, oakLogID, willowLogID) > 3
+			        && inventory.getCount() < 27) {
+				if (!invLog.getComponent().contains(mouse.getLocation().x, mouse.getLocation().y)) {
+					invLog.getComponent().doHover();
+					return 0;
+				}
+				mouse.click(false);
+				sleep(random(10, 40));
+				mouse.hop(mouse.getLocation().x, mouse.getLocation().y + 40);
+				sleep(random(10, 40));
+				mouse.click(true);
+				logCount = logs - 1;
+				clickTree = true;
+				RSItem invLogOld = invLog;
+				boolean continued = false;
+				for (RSItem i : inventory.getItems()) {
+					if (i.getName().contains("logs") && !i.getPoint().equals(invLog.getPoint()) && i.hasAction("Drop")) {
+						invLog = i;
+						if (random(0, 10) == 0 && !continued) {
+							continued = true;
+							continue;
+						}
+						break;
+					}
+				}
+				if (random(0, 5) == 0) {
+					if (!invLog.getComponent().doHover()) {
+						return 0;
+					}
+					mouse.click(false);
+					sleep(random(10, 40));
+					mouse.hop(mouse.getLocation().x, mouse.getLocation().y + 50);
+					sleep(random(10, 40));
+					mouse.click(true);
+					logCount--;
+					for (RSItem i : inventory.getItems()) {
+						if (i.getName().contains("logs") && !i.getPoint().equals(invLog.getPoint())
+						        && !i.getPoint().equals(invLogOld.getPoint()) && i.hasAction("Drop")) {
+							invLog = i;
+							break;
+						}
+					}
+				}
+			}
+			if (invLog != null && !clickTree) {
+				if (!invLog.getComponent().contains(mouse.getLocation().x, mouse.getLocation().y)) {
+					invLog.getComponent().doHover();
+				} else if (rpTimer == null || !rpTimer.isRunning()) {
+					Rectangle r = invLog.getComponent().getArea();
+					Point rp = new Point((int) (r.getX() + r.getWidth() * random(0, 1000) / 1000), (int) (r.getY() + r
+					    .getHeight()
+					        * random(0, 1000) / 1000));
+					mouse.move(rp);
+					rpTimer = new Timer(random(2000, 15000));
+				} else {
+					antiBan();
+					logCount = inventory.getCount(regularLogID, oakLogID, willowLogID);
 				}
 			}
 		}
@@ -1274,18 +1412,12 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 
 	public boolean isTileFree(RSTile t) {
 		RSObject[] objs = objects.getAllAt(t);
-		if (objs.length == 0) {
-			return true;
+		for (RSObject o : objs) {
+			if (o.getID() == 2732) {
+				return false;
+			}
 		}
-//		for (RSObject r : objs) {
-//			if (r.getID() == 2732) {
-//				break;
-//			}
-//			if (r == objs[objs.length - 1]) {
-//				return true;
-//			}
-//		}
-		return false;
+		return true;
 	}
 
 	/**
@@ -1322,13 +1454,20 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 			dest = null;
 			return 0;
 		}
-		if (calc.tileOnScreen(dest) && menu.getIndex("Walk here") != -1) {
-			sleep(500);
-			tiles.interact(dest, "Walk here");
-		} else {
-			webWalk(dest);
+		Point p = calc.tileToScreen(dest);
+		if (calc.pointOnScreen(p)) {
+			mouse.move(p);
+			if (menu.contains("Walk here")) {
+				tiles.interact(dest, "Walk here");
+				chill();
+				return 0;
+			} else {
+				walking.walkTileMM(dest);
+				return random(700, 1500);
+			}
 		}
-		return random(700, 2400);
+		webWalk(dest);
+		return random(700, 1500);
 	}
 
 	public int take(RSGroundItem g) {
@@ -1417,29 +1556,274 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 	public void sendToURL(String url) {
 		try {
 			java.awt.Desktop.getDesktop().browse(java.net.URI.create(url));
-		} catch (Exception e) {
+		} catch (Exception e) {}
+	}
+
+	public void mouseDragged(MouseEvent arg0) {
+	}
+
+	public void mouseMoved(MouseEvent arg0) {
+		Rectangle infoArea = new Rectangle(490, 59, 25, 25);
+		Rectangle clickArea = new Rectangle(240, 150, 50, 50);
+		if (infoArea.contains(arg0.getPoint())) {
+			infoSelected = true;
+		} else {
+			infoSelected = false;
+		}
+		if (clickArea.contains(arg0.getPoint())) {
+			playSelected = true;
+		} else {
+			playSelected = false;
 		}
 	}
 
 	public void mousePressed(MouseEvent e) {
 		Rectangle area = new Rectangle(482, 319, 34, 19);
 		Rectangle area2 = new Rectangle(482, 300, 34, 19);
+		Rectangle fmArea = new Rectangle(490, 32, 25, 25);
+		Rectangle worldArea = new Rectangle(490, 5, 25, 25);
+		Rectangle infoArea = new Rectangle(490, 59, 25, 25);
+		Rectangle clickArea = new Rectangle(240, 150, 50, 50);
+		Rectangle cutYewArea = new Rectangle(469, 345, 25, 25);
+		Rectangle indHatchet = new Rectangle(469, 375, 25, 25);
+		Rectangle aHatchet = new Rectangle(469, 405, 25, 25);
+		Rectangle logArea = new Rectangle(336, 3, 31, 25);
+		Rectangle oakArea = new Rectangle(367, 3, 31, 25);
+		Rectangle willowArea = new Rectangle(398, 3, 31, 25);
+		Rectangle yewArea = new Rectangle(429, 3, 31, 25);
+		Rectangle idx1 = new Rectangle(341, 28, 124, 20);
+		Rectangle idx2 = new Rectangle(341, 48, 124, 20);
+		Rectangle idx3 = new Rectangle(341, 68, 124, 20);
+		Rectangle idx4 = new Rectangle(341, 105 - 17, 124, 20);
+		Rectangle mode1 = new Rectangle(285, 28, 51, 20);
+		Rectangle mode2 = new Rectangle(285, 48, 51, 20);
+		Rectangle mode3 = new Rectangle(285, 68, 51, 20);
+		Rectangle mode4 = new Rectangle(285, 88, 51, 20);
+
 		Point a = e.getPoint();
+		if (indHatchet.contains(a)) {
+			useAvailableHatchets = false;
+		}
+		if (aHatchet.contains(a)) {
+			useAvailableHatchets = true;
+		}
 		if (area.contains(a)) {
 			showPaint = !showPaint;
 		}
 		if (area2.contains(a)) {
 			useBank = !useBank;
 		}
+		if (fmArea.contains(a)) {
+			trainFM = !trainFM;
+		}
+		if (worldArea.contains(a)) {
+			globeSelected = !globeSelected;
+		}
+		if (infoArea.contains(a)) {
+			sendToURL("http://goo.gl/WEQX6");
+		}
+		if (clickArea.contains(a)) {
+			playClicked = true;
+			wait = false;
+			globeSelected = false;
+		}
+		if (cutYewArea.contains(a)) {
+			yewAfter60 = !yewAfter60;
+		}
+		if (globeSelected) {
+			if (logArea.contains(a)) {
+				if (!treeSelected) {
+					treeSelected = true;
+					oakSelected = false;
+					willowSelected = false;
+					yewSelected = false;
+				}
+			}
+			if (oakArea.contains(a)) {
+				if (!oakSelected) {
+					treeSelected = false;
+					oakSelected = true;
+					willowSelected = false;
+					yewSelected = false;
+				}
+			}
+			if (willowArea.contains(a)) {
+				if (!willowSelected) {
+					treeSelected = false;
+					oakSelected = false;
+					willowSelected = true;
+					yewSelected = false;
+				}
+			}
+			if (yewArea.contains(a)) {
+				if (!yewSelected) {
+					treeSelected = false;
+					oakSelected = false;
+					willowSelected = false;
+					yewSelected = true;
+				}
+			}
+			if (treeSelected) {
+				if (idx1.contains(a)) {
+					treeLocation = 1;
+				}
+				if (mode1.contains(a)) {
+					bankTree = false;
+					dropTree = false;
+				}
+				if (mode2.contains(a)) {
+					dropTree = true;
+					bankTree = false;
+				}
+				if (mode3.contains(a)) {
+					bankTree = true;
+					dropTree = false;
+				}
+			}
+			if (oakSelected) {
+				if (idx1.contains(a)) {
+					oakLocation = 1;
+				}
+				if (idx2.contains(a)) {
+					oakLocation = 2;
+				}
+				if (idx3.contains(a)) {
+					oakLocation = 3;
+				}
+				if (mode1.contains(a)) {
+					bankOak = true;
+					dropOak = false;
+					powerchopOak = false;
+				}
+				if (mode2.contains(a)) {
+					dropOak = true;
+					bankOak = false;
+					powerchopOak = false;
+				}
+				if (mode3.contains(a)) {
+					bankOak = false;
+					dropOak = false;
+					powerchopOak = true;
+				}
+			}
+			if (willowSelected) {
+				if (idx1.contains(a)) {
+					willowLocation = 1;
+				}
+				if (idx2.contains(a)) {
+					willowLocation = 2;
+				}
+				if (idx3.contains(a)) {
+					willowLocation = 3;
+				}
+				if (idx4.contains(a)) {
+					willowLocation = 4;
+				}
+				if (willowLocation == 1 || willowLocation == 2) {
+					if (mode1.contains(a)) {
+						bankWillow = false;
+						dropWillow = false;
+						powerchopWillow = false;
+					}
+					if (mode2.contains(a)) {
+						dropWillow = false;
+						bankWillow = true;
+						powerchopWillow = false;
+					}
+					if (mode3.contains(a)) {
+						bankWillow = false;
+						dropWillow = true;
+						powerchopWillow = false;
+					}
+					if (mode4.contains(a)) {
+						bankWillow = false;
+						dropWillow = false;
+						powerchopWillow = true;
+					}
+				}
+				if (willowLocation == 3 || willowLocation == 4) {
+					if (mode1.contains(a)) {
+						dropWillow = false;
+						bankWillow = true;
+						powerchopWillow = false;
+					}
+					if (mode2.contains(a)) {
+						bankWillow = false;
+						dropWillow = true;
+						powerchopWillow = false;
+					}
+					if (mode3.contains(a)) {
+						bankWillow = false;
+						dropWillow = false;
+						powerchopWillow = true;
+					}
+				}
+			}
+			if (yewSelected) {
+				if (idx1.contains(a)) {
+					yewLocation = 1;
+				}
+				if (idx2.contains(a)) {
+					yewLocation = 2;
+				}
+				if (idx3.contains(a)) {
+					yewLocation = 3;
+				}
+			}
+		}
 	}
 
 	@Override
 	public void mouseClicked(MouseEvent e) {
-		Rectangle area = new Rectangle(482, 281, 34, 19);
-		Point a = e.getPoint();
-		if (area.contains(a))
-			frame.setVisible(true);
 	}
+
+	final Color color1 = new Color(0, 255, 100); // highlight
+	final Color color2 = new Color(51, 255, 51, 130); // back
+	final Color color3 = new Color(51, 255, 51, 200);
+	final Color color4 = new Color(255, 51, 51, 150); // red
+	final Color color5 = new Color(255, 255, 255, 100); // White
+	final Color color6 = new Color(0, 0, 0); // Black
+	final Color color7 = new Color(0, 0, 0, 200);
+	final Color color9 = new Color(255, 255, 255); // White
+
+	final BasicStroke stroke1 = new BasicStroke(1);
+	final Font font1 = new Font("CordiaUPC", 0, 24);
+	final Font font2 = new Font("Arial", 0, 9);
+	final Font font3 = new Font("Arial", 0, 12);
+	final Font font4 = new Font("Dotum", 0, 12);
+	int r = 0;
+	int b = 0;
+	int g = 0;
+	final Color MOUSE_BORDER_COLOR = new Color(225, 200, 25);
+	final Color MOUSE_COLOR = new Color(132, 198, 99);
+	String dots = "";
+	final BufferedImage img1 = getImage("flameSelected.png", "http://i.imgur.com/CyNp4.png");
+	final BufferedImage img2 = getImage("globeSelected.png", "http://i.imgur.com/KGZjx.png");
+	final BufferedImage img3 = getImage("tickSmall.png", "http://i.imgur.com/0J7me.png");
+	final BufferedImage img4 = getImage("logo.png", "http://i.imgur.com/9MfV2.png");
+	final BufferedImage img5 = getImage("globe.png", "http://i.imgur.com/ETx9r.png");
+	final BufferedImage img6 = getImage("flame.png", "http://i.imgur.com/97RDO.png");
+	final BufferedImage img7 = getImage("info.png", "http://i.imgur.com/hRYtG.png");
+	final BufferedImage img8 = getImage("infoSelected.png", "http://i.imgur.com/6HJoR.png");
+	final BufferedImage img9 = getImage("play.png", "http://i.imgur.com/CPp7m.png");
+	final BufferedImage img10 = getImage("playSelected.png", "http://i.imgur.com/Q4Efo.png");
+	final BufferedImage img11 = getImage("tickSelected.png", "http://i.imgur.com/mBUvC.png");
+	final BufferedImage img12 = getImage("tick.png", "http://i.imgur.com/fwlC1.png");
+
+	boolean treeSelected = true;
+	boolean oakSelected = false;
+	boolean willowSelected = false;
+	boolean yewSelected = false;
+	boolean globeSelected = false;
+	boolean infoSelected = false;
+	boolean playSelected = false;
+	boolean playClicked = false;
+	int treeLocation = 1;
+	int oakLocation = 1;
+	int willowLocation = 1;
+	int yewLocation = 1;
+
+	int treeIdx = 0;
 
 	public void onRepaint(Graphics g1) {
 		Graphics2D g = (Graphics2D) g1;
@@ -1453,6 +1837,385 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 		drawMouse(g);
 
 		if (showPaint) {
+			if (globeSelected) {
+				if (treeSelected) {
+					g.setColor(color7); // Largest box
+					g.fillRect(336, 3, 124, 25 + 20 * 1);
+					g.setColor(color6);
+					g.drawRect(336, 3, 124, 25 + 20 * 1);
+					g.setColor(color7); // Thin middle box
+					g.fillRect(460, 3, 27, 25 + 20 * 1);
+					g.setColor(color6);
+					g.drawRect(460, 3, 27, 25 + 20 * 1);
+					g.drawImage(img3, 466, 32 + 20 * (treeLocation - 1), null); // Tick
+					g.setColor(color3);
+					g.setFont(font4);
+					g.drawString("Lumbridge", 341, 44);
+				}
+				if (oakSelected) {
+					g.setColor(color7); // Largest box
+					g.fillRect(336, 3, 124, 25 + 20 * 3);
+					g.setColor(color6);
+					g.drawRect(336, 3, 124, 25 + 20 * 3);
+					g.setColor(color7); // Thin middle box
+					g.fillRect(460, 3, 27, 25 + 20 * 3);
+					g.setColor(color6);
+					g.drawRect(460, 3, 27, 25 + 20 * 3);
+					g.drawImage(img3, 466, 32 + 20 * (oakLocation - 1), null); // Tick
+					g.setColor(color3);
+					g.setFont(font4);
+					g.drawString("North East Draynor", 341, 44);
+					g.drawString("East Draynor", 341, 64);
+					g.drawString("North Draynor", 341, 84);
+				}
+				if (willowSelected) {
+					g.setColor(color7); // Largest box
+					g.fillRect(336, 3, 124, 25 + 20 * 4);
+					g.setColor(color6);
+					g.drawRect(336, 3, 124, 25 + 20 * 4);
+					g.setColor(color7); // Thin middle box
+					g.fillRect(460, 3, 27, 25 + 20 * 4);
+					g.setColor(color6);
+					g.drawRect(460, 3, 27, 25 + 20 * 4);
+					g.drawImage(img3, 466, 32 + 20 * (willowLocation - 1), null); // Tick
+					g.setColor(color3);
+					g.setFont(font4);
+					g.drawString("Rimmington", 341, 44);
+					g.drawString("Lumbridge", 341, 64);
+					g.drawString("Port Sarim", 341, 84);
+					g.drawString("Draynor", 341, 104);
+				}
+				if (yewSelected) {
+					g.setColor(color7); // Largest box
+					g.fillRect(336, 3, 124, 25 + 20 * 3);
+					g.setColor(color6);
+					g.drawRect(336, 3, 124, 25 + 20 * 3);
+					g.setColor(color7); // Thin middle box
+					g.fillRect(460, 3, 27, 25 + 20 * 3);
+					g.setColor(color6);
+					g.drawRect(460, 3, 27, 25 + 20 * 3);
+					g.drawImage(img3, 466, 32 + 20 * (yewLocation - 1), null); // Tick
+					g.setColor(color3);
+					g.setFont(font4);
+					g.drawString("Rimmington", 341, 44);
+					g.drawString("Lumbridge", 341, 64);
+					g.drawString("Port Sarim", 341, 84);
+				}
+
+				if (treeSelected) {
+					g.setColor(color3);
+					g.setFont(font2);
+					g.drawString("Tree", 342, 21);
+					if (treeLocation == 1) {
+						g.setColor(color7);
+						g.fillRect(285, 28, 51, 60);
+						g.setColor(color6);
+						g.drawRect(285, 28, 51, 60);
+						if (bankTree) {
+							g.setColor(color3);
+						} else {
+							g.setColor(color9);
+						}
+						g.drawString("Bank", 290, 81);
+						if (dropTree) {
+							g.setColor(color3);
+						} else {
+							g.setColor(color9);
+						}
+						g.drawString("Drop", 290, 61);
+						if (!bankTree && !dropTree) {
+							g.setColor(color3);
+						} else {
+							g.setColor(color9);
+						}
+						g.drawString("Sell", 290, 41);
+					}
+				} else {
+					g.setFont(font2);
+					g.setColor(color9);
+					g.drawString("Tree", 342, 21);
+				}
+				if (oakSelected) {
+					g.setColor(color3);
+					g.setFont(font2);
+					g.drawString("Oak", 374, 21);
+					if (oakLocation == 1) { // All modes for oaks are the same.
+						g.setColor(color7);
+						g.fillRect(285, 28, 51, 60);
+						g.setColor(color6);
+						g.drawRect(285, 28, 51, 60);
+						g.setColor(color9);
+						if (bankOak || (!dropOak && !powerchopOak))
+							g.setColor(color3);
+						g.drawString("Bank", 290, 41);
+						g.setColor(color9);
+						if (dropOak)
+							g.setColor(color3);
+						g.drawString("Drop", 290, 61);
+						g.setColor(color9);
+						if (powerchopOak)
+							g.setColor(color3);
+						g.drawString("Powerchop", 290, 81);
+					}
+					if (oakLocation == 2) {
+						g.setColor(color7);
+						g.fillRect(285, 28, 51, 60);
+						g.setColor(color6);
+						g.drawRect(285, 28, 51, 60);
+						if (bankOak || (!dropOak && !powerchopOak)) {
+							g.setColor(color3);
+						} else {
+							g.setColor(color9);
+						}
+						g.drawString("Bank", 290, 41);
+						if (dropOak) {
+							g.setColor(color3);
+						} else {
+							g.setColor(color9);
+						}
+						g.drawString("Drop", 290, 61);
+						if (powerchopOak) {
+							g.setColor(color3);
+						} else {
+							g.setColor(color9);
+						}
+						g.drawString("Powerchop", 290, 81);
+					}
+					if (oakLocation == 3) {
+						g.setColor(color7);
+						g.fillRect(285, 28, 51, 60);
+						g.setColor(color6);
+						g.drawRect(285, 28, 51, 60);
+						if (bankOak || (!drop && !powerchop)) {
+							g.setColor(color3);
+						} else {
+							g.setColor(color9);
+						}
+						g.drawString("Bank", 290, 41);
+						if (drop) {
+							g.setColor(color3);
+						} else {
+							g.setColor(color9);
+						}
+						g.drawString("Drop", 290, 61);
+						if (powerchop) {
+							g.setColor(color3);
+						} else {
+							g.setColor(color9);
+						}
+						g.drawString("Powerchop", 290, 81);
+					}
+				} else {
+					g.setColor(color9);
+					g.setFont(font2);
+					g.drawString("Oak", 374, 21);
+				}
+				if (willowSelected) {
+					g.setColor(color3);
+					g.setFont(font2);
+					g.drawString("Willow", 401, 21);
+					if (willowLocation == 1) {
+						g.setColor(color7);
+						g.fillRect(285, 28, 51, 80);
+						g.setColor(color6);
+						g.drawRect(285, 28, 51, 80);
+						if (!bankWillow && !dropWillow && !powerchopWillow) {
+							g.setColor(color3);
+						} else {
+							g.setColor(color9);
+						}
+						g.drawString("Sell", 290, 41);
+						if (bankWillow) {
+							g.setColor(color3);
+						} else {
+							g.setColor(color9);
+						}
+						g.drawString("Bank", 290, 61);
+						if (dropWillow) {
+							g.setColor(color3);
+						} else {
+							g.setColor(color9);
+						}
+						g.drawString("Drop", 290, 81);
+						if (powerchopWillow) {
+							g.setColor(color3);
+						} else {
+							g.setColor(color9);
+						}
+						g.drawString("Powerchop", 290, 101);
+					}
+					if (willowLocation == 2) {
+						g.setColor(color7);
+						g.fillRect(285, 28, 51, 80);
+						g.setColor(color6);
+						g.drawRect(285, 28, 51, 80);
+						if (!bankWillow && !dropWillow && !powerchopWillow) {
+							g.setColor(color3);
+						} else {
+							g.setColor(color9);
+						}
+						g.drawString("Sell", 290, 41);
+						if (bankWillow) {
+							g.setColor(color3);
+						} else {
+							g.setColor(color9);
+						}
+						g.drawString("Bank", 290, 61);
+						if (dropWillow) {
+							g.setColor(color3);
+						} else {
+							g.setColor(color9);
+						}
+						g.drawString("Drop", 290, 81);
+						if (powerchopWillow) {
+							g.setColor(color3);
+						} else {
+							g.setColor(color9);
+						}
+						g.drawString("Powerchop", 290, 101);
+					}
+					if (willowLocation == 3) {
+						g.setColor(color7);
+						g.fillRect(285, 28, 51, 60);
+						g.setColor(color6);
+						g.drawRect(285, 28, 51, 60);
+						if (bankWillow || (!dropWillow && !powerchopWillow)) {
+							g.setColor(color3);
+						} else {
+							g.setColor(color9);
+						}
+						g.drawString("Bank", 290, 41);
+						if (dropWillow) {
+							g.setColor(color3);
+						} else {
+							g.setColor(color9);
+						}
+						g.drawString("Drop", 290, 61);
+						if (powerchopWillow) {
+							g.setColor(color3);
+						} else {
+							g.setColor(color9);
+						}
+						g.drawString("Powerchop", 290, 81);
+					}
+					if (willowLocation == 4) {
+						g.setColor(color7);
+						g.fillRect(285, 28, 51, 60);
+						g.setColor(color6);
+						g.drawRect(285, 28, 51, 60);
+						if (bankWillow || (!dropWillow && !powerchopWillow)) {
+							g.setColor(color3);
+						} else {
+							g.setColor(color9);
+						}
+						g.drawString("Bank", 290, 41);
+						if (dropWillow) {
+							g.setColor(color3);
+						} else {
+							g.setColor(color9);
+						}
+						g.drawString("Drop", 290, 61);
+						if (powerchopWillow) {
+							g.setColor(color3);
+						} else {
+							g.setColor(color9);
+						}
+						g.drawString("Powerchop", 290, 81);
+					}
+				} else {
+					g.setColor(color9);
+					g.setFont(font2);
+					g.drawString("Willow", 401, 21);
+				}
+				if (yewSelected) {
+					g.setColor(color3);
+					g.setFont(font2);
+					g.drawString("Yew", 435, 21);
+					g.setColor(color7);
+					g.fillRect(285, 28, 51, 20);
+					g.setColor(color7);
+					g.drawRect(285, 28, 51, 20);
+					if (yewLocation == 1) { // All yew modes are the same.
+						g.setColor(color3);
+						g.drawString("Bank", 290, 41);
+					}
+					if (yewLocation == 2) {
+						g.setColor(color3);
+						g.drawString("Bank", 290, 41);
+					}
+					if (yewLocation == 3) {
+						g.setColor(color3);
+						g.drawString("Bank", 290, 41);
+					}
+				} else {
+					g.setColor(color9);
+					g.setFont(font2);
+					g.drawString("Yew", 435, 21);
+				}
+
+				g.setColor(color6);
+				g.drawRect(285, 3, 51, 25);
+				g.setColor(color7);
+				g.fillRect(285, 3, 51, 25);
+				g.setColor(color9);
+				g.drawString("MODE", 290, 21);
+
+				g.setColor(color6);
+				g.drawRect(336, 3, 31, 25);
+				g.setColor(color6);
+				g.drawRect(367, 3, 31, 25);
+				g.setColor(color6);
+				g.drawRect(398, 3, 31, 25);
+				g.setColor(color6);
+				g.drawRect(429, 3, 31, 25);
+				g.setFont(font2);
+			}
+
+			if (trainFM) {
+				g.drawImage(img1, 490, 32, null); // Flame
+			} else {
+				g.drawImage(img6, 490, 32, null);
+			}
+			if (globeSelected) {
+				g.drawImage(img2, 490, 5, null); // Globe
+			} else {
+				g.drawImage(img5, 490, 5, null);
+			}
+			if (infoSelected) {
+				g.drawImage(img8, 490, 59, null);
+			} else {
+				g.drawImage(img7, 490, 59, null);
+			}
+			g.setColor(color5);
+			g.fillRect(287, 345, 210, 113);
+			g.setFont(font4);
+			g.setColor(color6);
+			g.drawString("Cut Yews after 60 WC.", 338, 362);
+			if (yewAfter60) {
+				g.drawImage(img11, 469, 345, null);
+			} else {
+				g.drawImage(img12, 469, 345, null);
+			}
+			g.drawString("Use available hatchets.", 334, 422);
+			g.drawString("Obtain hatchets independently.", 290, 392);
+			if (useAvailableHatchets) {
+				g.drawImage(img11, 469, 405, null);
+				g.drawImage(img12, 469, 375, null);
+			} else {
+				g.drawImage(img11, 469, 375, null);
+				g.drawImage(img12, 469, 405, null);
+			}
+
+			if (!playClicked) {
+				if (playSelected) {
+					g.drawImage(img10, 240, 150, null);
+				} else {
+					g.drawImage(img9, 240, 150, null);
+				}
+			}
+
+			//			g.drawImage(img4, 290, 0, null); End of new paint
+
 			g.setColor(color2);
 			g.fillRect(340, 242, 176, 96); // Green back
 			g.setColor(color6);
@@ -1472,7 +2235,7 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 
 			g.setFont(font3);
 			g.setColor(color6);
-			g.drawString(Integer.toString(wcLvl()) + " WC", 420, 235);
+			g.drawString(Integer.toString(wcLvl()) + " WC", 415, 235);
 
 			if (trainFM) {
 				g.setColor(color2);
@@ -1494,7 +2257,7 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 
 				g.setFont(font3);
 				g.setColor(color6);
-				g.drawString(Integer.toString(fmLvl()) + " FM", 420, 179);
+				g.drawString(Integer.toString(fmLvl()) + " FM", 415, 179);
 
 				g.drawString(levelsGained2 + " levels, " + (skills.getCurrentExp(Skills.FIREMAKING) - initialXP2)
 				        + " xp", 345, 200);
@@ -1529,13 +2292,13 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 			if (antiBan.length() > 0) {
 				g.setFont(font2);
 				g.setColor(color5);
-				g.fillRect(315, 350, g.getFontMetrics().stringWidth("Antiban: " + antiBan) + 3, 15);
+				g.fillRect(100, 323, g.getFontMetrics().stringWidth("Antiban: " + antiBan) + 3, 15);
 				g.setColor(color6);
-				g.drawRect(315, 350, g.getFontMetrics().stringWidth("Antiban: " + antiBan) + 3, 15);
-				g.drawString("Antiban: " + antiBan, 317, 360);
+				g.drawRect(100, 323, g.getFontMetrics().stringWidth("Antiban: " + antiBan) + 3, 15);
+				g.drawString("Antiban: " + antiBan, 102, 333);
 			}
 			g.setFont(font3);
-			g.drawString(hours + ":" + minutes + ":" + seconds, 345, 290);
+			g.drawString(hours + ":" + minutes + ":" + seconds + "   Version: " + scriptVersion, 345, 290);
 
 			g.setColor(color6); // Show/Hide button
 			g.drawRect(482, 319, 34, 19);
@@ -1550,20 +2313,10 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 				g.drawRect(482, 300, 34, 19);
 			}
 
-			if (!frame.isVisible()) {
-				g.setColor(color6);
-				g.drawRect(482, 281, 34, 19);
-
-				g.setFont(font2);
-				g.setColor(color6);
-				g.drawString("GUI", 490, 294);
-			}
-
 			g.setFont(font2);
 			g.setColor(color6);
 			g.drawString("Hide", 490, 332);
 			g.drawString("Bank", 490, 313);
-
 		} else {
 			g.setColor(color2); // Show/Hide button
 			g.fillRect(482, 319, 34, 19);
@@ -1589,17 +2342,6 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 			g.setFont(font2);
 			g.setColor(color6);
 			g.drawString("Bank", 490, 313);
-
-			if (!frame.isVisible()) {
-				g.setColor(color2);
-				g.fillRect(482, 281, 34, 19);
-				g.setColor(color6);
-				g.drawRect(482, 281, 34, 19);
-
-				g.setFont(font2);
-				g.setColor(color6);
-				g.drawString("GUI", 490, 294);
-			}
 		}
 	}
 
@@ -1630,7 +2372,7 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 			b = 255;
 			this.g = 255;
 		} else {
-			double fadeTime = 1000d;
+			double fadeTime = 800;
 			double timeDiff = fadeTime - (System.currentTimeMillis() - clickTimer);
 			if (r > 0) {
 				r = (int) (timeDiff * 255d / fadeTime);
@@ -1658,18 +2400,27 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 		spinG2.drawLine(p.x, p.y - 5, p.x, p.y + 5);
 	}
 
-	int stopAtWC = 100;
-	int stopAtFM = 100;
-	int after60WC = 0; // 0 cut willows, 1 stop script, 2 cut yews.
-	int afterXFM = 0; // 0 continue wcing and stop fming, 1 stop script
-	int oakLocation = 0;
-	int willowLocation = 0;
-	int treeLocation = 0;
-	int yewLocation = 0;
-	boolean takeScreenshotsEvery = false;
-	boolean takeScreenshotOnFinish = false;
-	boolean takeScreenshotOnLevel = false;
-	long screenshotTimer = 0;
+	boolean yewAfter60 = false;
+	boolean clickTree = false;
+	int logCount = 0;
+	RSItem invLog;
+	boolean powerchop = false;
+	boolean drop = false;
+
+	boolean dropTree = false;
+	boolean sellTree = false;
+	boolean bankTree = false;
+
+	boolean bankOak = false;
+	boolean dropOak = false;
+	boolean powerchopOak = false;
+
+	boolean sellWillow = false;
+	boolean bankWillow = false;
+	boolean dropWillow = false;
+	boolean powerchopWillow = false;
+
+	boolean bankYew = true;
 
 	boolean useAvailableHatchets = false;
 	boolean checkedBank = false;
@@ -1682,594 +2433,8 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 	boolean hasRuneHatchet = false;
 	int bestHatchetAvailable = -1;
 
-	@SuppressWarnings("serial")
-	public class GUI extends JFrame {
-		public GUI() {
-			initComponents();
-		}
-
-		public void setVariables() {
-			trainFM = checkBox1.isSelected();
-			stopAtWC = Integer.parseInt(textField1.getText());
-			stopAtFM = Integer.parseInt(textField2.getText());
-			afterXFM = comboBox5.getSelectedIndex(); // Train wc, stop script
-			after60WC = comboBox1.getSelectedIndex();
-			useAvailableHatchets = radioButton2.isSelected();
-			oakLocation = comboBox7.getSelectedIndex();
-			// North East Draynor, EastDraynor, North Draynor
-			willowLocation = comboBox8.getSelectedIndex();
-			// Rimmington, Lumbridge, Port Sarim
-			treeLocation = comboBox6.getSelectedIndex();
-			// Lumbridge
-			yewLocation = comboBox10.getSelectedIndex();
-			// Rimmington, Lumbridge, Port Sarim
-			if (checkBox2.isSelected()) {
-				int idx = comboBox2.getSelectedIndex();
-				if (idx == 0)
-					screenshotTimer = 1800000;
-				else if (idx == 1)
-					screenshotTimer = 3600000;
-				else if (idx == 2)
-					screenshotTimer = 7200000;
-				else if (idx == 3)
-					screenshotTimer = 10800000;
-				else
-					screenshotTimer = 0;
-			}
-			takeScreenshotOnFinish = checkBox3.isSelected();
-			takeScreenshotOnLevel = checkBox4.isSelected();
-		}
-
-		private void checkBox1ActionPerformed(ActionEvent e) {
-			if (checkBox1.isSelected()) {
-				label8.setEnabled(true);
-				label9.setEnabled(true);
-				textField2.setEnabled(true);
-				comboBox5.setEnabled(true);
-			} else {
-				label8.setEnabled(false);
-				label9.setEnabled(false);
-				textField2.setEnabled(false);
-				comboBox5.setEnabled(false);
-			}
-		}
-
-		private void textField1KeyReleased(KeyEvent e) {
-			if (textField1.getText().length() > 0) {
-				if (Integer.parseInt(textField1.getText()) > 60) {
-					label4.setEnabled(true);
-					comboBox1.setEnabled(true);
-				} else {
-					label4.setEnabled(false);
-					comboBox1.setEnabled(false);
-				}
-			}
-		}
-
-		public void button1ActionPerformed(ActionEvent e) { // Start button
-			setVisible(false);
-			guiWait = false;
-			setVariables();
-		}
-
-		public void button2ActionPerformed(ActionEvent e) { // Thread button
-			sendToURL("http://goo.gl/WEQX6");
-		}
-
-		public void radioButton1ActionPerformed(ActionEvent e) {
-			if (radioButton1.isSelected()) {
-				radioButton2.setSelected(false);
-			} else {
-				radioButton1.setSelected(true);
-			}
-		}
-
-		public void radioButton2ActionPerformed(ActionEvent e) {
-			if (radioButton2.isSelected()) {
-				radioButton1.setSelected(false);
-			} else {
-				radioButton2.setSelected(true);
-			}
-		}
-
-		private void checkBox2ActionPerformed(ActionEvent e) {
-			if (checkBox2.isSelected()) {
-				comboBox2.setEnabled(true);
-			} else {
-				comboBox2.setEnabled(false);
-			}
-		}
-
-		private void initComponents() {
-			button3 = new JButton();
-			panel3 = new JPanel();
-			tabbedPane4 = new JTabbedPane();
-			panel5 = new JPanel();
-			label2 = new JLabel();
-			textField1 = new JTextField();
-			label3 = new JLabel();
-			label4 = new JLabel();
-			comboBox1 = new JComboBox();
-			checkBox1 = new JCheckBox();
-			label8 = new JLabel();
-			textField2 = new JTextField();
-			label9 = new JLabel();
-			comboBox5 = new JComboBox();
-			radioButton1 = new JRadioButton();
-			radioButton2 = new JRadioButton();
-			panel1 = new JPanel();
-			label12 = new JLabel();
-			label13 = new JLabel();
-			label14 = new JLabel();
-			label15 = new JLabel();
-			comboBox6 = new JComboBox();
-			comboBox7 = new JComboBox();
-			comboBox8 = new JComboBox();
-			comboBox10 = new JComboBox();
-			panel4 = new JPanel();
-			checkBox2 = new JCheckBox();
-			checkBox3 = new JCheckBox();
-			comboBox2 = new JComboBox();
-			checkBox4 = new JCheckBox();
-			panel2 = new JPanel();
-			label10 = new JLabel();
-			button2 = new JButton();
-			label11 = new JLabel();
-			label16 = new JLabel();
-			label17 = new JLabel();
-			label18 = new JLabel();
-			scrollPane1 = new JScrollPane();
-			textArea1 = new JTextArea();
-			label1 = new JLabel();
-			button1 = new JButton();
-
-			//======== this ========
-			setTitle("Dynamic Woodcutter Options");
-			setBackground(Color.darkGray);
-			setForeground(Color.black);
-			Container contentPane = getContentPane();
-
-			//---- button3 ----
-			button3.setEnabled(false);
-			button3.setVisible(false);
-			button3.setBackground(Color.darkGray);
-
-			//======== panel3 ========
-			{
-				panel3.setBackground(Color.darkGray);
-				//======== tabbedPane4 ========
-				{
-					tabbedPane4.setBackground(Color.darkGray);
-
-					//======== panel5 ========
-					{
-						panel5.setBackground(Color.darkGray);
-
-						//---- label2 ----
-						label2.setText("Stop at");
-						label2.setBackground(Color.darkGray);
-
-						//---- textField1 ----
-						textField1.setText("100");
-						textField1.setBackground(Color.darkGray);
-						textField1.addKeyListener(new KeyAdapter() {
-							@Override
-							public void keyReleased(KeyEvent e) {
-								textField1KeyReleased(e);
-							}
-						});
-
-						//---- label3 ----
-						label3.setText("Woodcutting");
-						label3.setBackground(Color.darkGray);
-
-						//---- label4 ----
-						label4.setText("After 60 Woodcutting");
-						label4.setBackground(Color.darkGray);
-
-						//---- comboBox1 ----
-						comboBox1.setModel(new DefaultComboBoxModel(new String[] { "Cut Willows", "Stop script",
-						        "Cut Yews" }));
-						comboBox1.setBackground(Color.darkGray);
-
-						//---- checkBox1 ----
-						checkBox1.setText("Train Firemaking?");
-						checkBox1.setBackground(Color.darkGray);
-						checkBox1.addActionListener(new ActionListener() {
-							@Override
-							public void actionPerformed(ActionEvent e) {
-								checkBox1ActionPerformed(e);
-							}
-						});
-
-						//---- label8 ----
-						label8.setText("After");
-						label8.setEnabled(false);
-						label8.setBackground(Color.darkGray);
-
-						//---- textField2 ----
-						textField2.setText("100");
-						textField2.setEnabled(false);
-						textField2.setBackground(Color.darkGray);
-
-						//---- label9 ----
-						label9.setText("Firemaking");
-						label9.setEnabled(false);
-						label9.setBackground(Color.darkGray);
-
-						//---- comboBox5 ----
-						comboBox5.setModel(new DefaultComboBoxModel(new String[] { "Train WC", "Stop script" }));
-						comboBox5.setEnabled(false);
-						comboBox5.setBackground(Color.darkGray);
-
-						//---- radioButton1 ----
-						radioButton1.setText("Obtain hatchets independently");
-						radioButton1.setEnabled(true);
-						radioButton1.setSelected(true);
-						radioButton1.setBackground(Color.darkGray);
-						radioButton1.addActionListener(new ActionListener() {
-							@Override
-							public void actionPerformed(ActionEvent e) {
-								radioButton1ActionPerformed(e);
-							}
-						});
-
-						//---- radioButton2 ----
-						radioButton2.setText("Use available hatchets");
-						radioButton2.setEnabled(true);
-						radioButton2.setBackground(Color.darkGray);
-						radioButton2.addActionListener(new ActionListener() {
-							@Override
-							public void actionPerformed(ActionEvent e) {
-								radioButton2ActionPerformed(e);
-							}
-						});
-
-						GroupLayout panel5Layout = new GroupLayout(panel5);
-						panel5.setLayout(panel5Layout);
-						panel5Layout.setHorizontalGroup(panel5Layout.createParallelGroup().addGroup(
-						    panel5Layout.createSequentialGroup().addContainerGap().addGroup(
-						        panel5Layout.createParallelGroup().addComponent(radioButton2,
-						            GroupLayout.PREFERRED_SIZE, 177, GroupLayout.PREFERRED_SIZE)
-						            .addComponent(checkBox1).addGroup(
-						                panel5Layout.createSequentialGroup().addComponent(label2).addPreferredGap(
-						                    LayoutStyle.ComponentPlacement.UNRELATED).addComponent(textField1,
-						                    GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE)
-						                    .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED).addComponent(
-						                        label3)).addGroup(
-						                panel5Layout.createSequentialGroup().addComponent(label4).addPreferredGap(
-						                    LayoutStyle.ComponentPlacement.UNRELATED).addComponent(comboBox1,
-						                    GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						                    GroupLayout.PREFERRED_SIZE)).addComponent(radioButton1,
-						                GroupLayout.PREFERRED_SIZE, 216, GroupLayout.PREFERRED_SIZE).addGroup(
-						                panel5Layout.createSequentialGroup().addComponent(label8).addPreferredGap(
-						                    LayoutStyle.ComponentPlacement.RELATED).addComponent(textField2,
-						                    GroupLayout.PREFERRED_SIZE, 30, GroupLayout.PREFERRED_SIZE).addGap(10, 10,
-						                    10).addComponent(label9).addPreferredGap(
-						                    LayoutStyle.ComponentPlacement.UNRELATED).addComponent(comboBox5,
-						                    GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						                    GroupLayout.PREFERRED_SIZE))).addContainerGap(56, Short.MAX_VALUE)));
-						panel5Layout
-						    .setVerticalGroup(panel5Layout.createParallelGroup().addGroup(
-						        panel5Layout.createSequentialGroup().addGap(6, 6, 6).addComponent(radioButton1).addGap(
-						            5, 5, 5).addComponent(radioButton2).addPreferredGap(
-						            LayoutStyle.ComponentPlacement.UNRELATED).addGroup(
-						            panel5Layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(
-						                textField1, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						                GroupLayout.PREFERRED_SIZE).addComponent(label2).addComponent(label3))
-						            .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED).addGroup(
-						                panel5Layout.createParallelGroup(GroupLayout.Alignment.BASELINE).addComponent(
-						                    label4).addComponent(comboBox1, GroupLayout.PREFERRED_SIZE,
-						                    GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addGap(11, 11, 11)
-						            .addComponent(checkBox1).addGap(18, 18, 18).addGroup(
-						                panel5Layout.createParallelGroup().addGroup(
-						                    panel5Layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-						                        .addComponent(label8).addComponent(textField2,
-						                            GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						                            GroupLayout.PREFERRED_SIZE)).addGroup(
-						                    panel5Layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-						                        .addComponent(label9).addComponent(comboBox5,
-						                            GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						                            GroupLayout.PREFERRED_SIZE))).addGap(56, 56, 56)));
-					}
-					tabbedPane4.addTab("Training", panel5);
-
-					//======== panel1 ========
-					{
-						panel1.setBackground(Color.darkGray);
-
-						//---- label12 ----
-						label12.setText("Tree:");
-
-						//---- label13 ----
-						label13.setText("Oak:");
-
-						//---- label14 ----
-						label14.setText("Willow:");
-
-						//---- label15 ----
-						label15.setText("Yew:");
-
-						//---- comboBox6 ----
-						comboBox6.setModel(new DefaultComboBoxModel(new String[] { "Lumbridge" }));
-
-						//---- comboBox7 ----
-						comboBox7.setModel(new DefaultComboBoxModel(new String[] { "North East Draynor",
-						        "East Draynor", "North Draynor" }));
-
-						//---- comboBox8 ----
-						comboBox8.setModel(new DefaultComboBoxModel(new String[] { "Rimmington", "Lumbridge",
-						        "Port Sarim" }));
-
-						//---- comboBox10 ----
-						comboBox10.setModel(new DefaultComboBoxModel(new String[] { "Rimmington", "Lumbridge",
-						        "Port Sarim" }));
-
-						GroupLayout panel1Layout = new GroupLayout(panel1);
-						panel1.setLayout(panel1Layout);
-						panel1Layout.setHorizontalGroup(panel1Layout.createParallelGroup().addGroup(
-						    panel1Layout.createSequentialGroup().addContainerGap().addGroup(
-						        panel1Layout.createParallelGroup().addComponent(label12).addComponent(label13)
-						            .addComponent(label14).addComponent(label15)).addGap(63, 63, 63).addGroup(
-						        panel1Layout.createParallelGroup().addComponent(comboBox8, GroupLayout.PREFERRED_SIZE,
-						            GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addComponent(comboBox7,
-						            GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-						            .addComponent(comboBox6, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						                GroupLayout.PREFERRED_SIZE).addComponent(comboBox10,
-						                GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						                GroupLayout.PREFERRED_SIZE)).addContainerGap(57, Short.MAX_VALUE)));
-						panel1Layout.setVerticalGroup(panel1Layout.createParallelGroup().addGroup(
-						    panel1Layout.createSequentialGroup().addGap(63, 63, 63).addGroup(
-						        panel1Layout.createParallelGroup(GroupLayout.Alignment.TRAILING).addComponent(label12)
-						            .addComponent(comboBox6, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						                GroupLayout.PREFERRED_SIZE)).addGap(18, 18, 18).addGroup(
-						        panel1Layout.createParallelGroup(GroupLayout.Alignment.TRAILING).addComponent(label13)
-						            .addComponent(comboBox7, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						                GroupLayout.PREFERRED_SIZE)).addGap(18, 18, 18).addGroup(
-						        panel1Layout.createParallelGroup(GroupLayout.Alignment.TRAILING).addComponent(label14)
-						            .addComponent(comboBox8, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						                GroupLayout.PREFERRED_SIZE)).addGap(18, 18, 18).addGroup(
-						        panel1Layout.createParallelGroup(GroupLayout.Alignment.TRAILING).addComponent(label15)
-						            .addComponent(comboBox10, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						                GroupLayout.PREFERRED_SIZE)).addContainerGap(68, Short.MAX_VALUE)));
-					}
-					tabbedPane4.addTab("Locations", panel1);
-
-					//======== panel4 ========
-					{
-						panel4.setBackground(Color.darkGray);
-
-						//---- checkBox2 ----
-						checkBox2.setText("Take screenshots every");
-						checkBox2.setBackground(Color.darkGray);
-						checkBox2.addActionListener(new ActionListener() {
-							@Override
-							public void actionPerformed(ActionEvent e) {
-								checkBox2ActionPerformed(e);
-							}
-						});
-
-						//---- checkBox3 ----
-						checkBox3.setText("Take screenshot on finish");
-						checkBox3.setBackground(Color.darkGray);
-
-						//---- comboBox2 ----
-						comboBox2.setModel(new DefaultComboBoxModel(new String[] { "30 Minutes", "Hour", "2 Hours",
-						        "3 Hours" }));
-						comboBox2.setBackground(Color.darkGray);
-						comboBox2.setEnabled(false);
-
-						//---- checkBox4 ----
-						checkBox4.setText("Take screenshot on level");
-						checkBox4.setBackground(Color.darkGray);
-
-						GroupLayout panel4Layout = new GroupLayout(panel4);
-						panel4.setLayout(panel4Layout);
-						panel4Layout.setHorizontalGroup(panel4Layout.createParallelGroup().addGroup(
-						    panel4Layout.createSequentialGroup().addContainerGap().addGroup(
-						        panel4Layout.createParallelGroup().addGroup(
-						            panel4Layout.createSequentialGroup().addComponent(checkBox2,
-						                GroupLayout.DEFAULT_SIZE, 146, Short.MAX_VALUE).addGap(18, 18, 18)
-						                .addComponent(comboBox2, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-						                    GroupLayout.PREFERRED_SIZE).addGap(35, 35, 35)).addGroup(
-						            panel4Layout.createSequentialGroup().addComponent(checkBox3,
-						                GroupLayout.PREFERRED_SIZE, 165, GroupLayout.PREFERRED_SIZE).addContainerGap(
-						                111, Short.MAX_VALUE)).addGroup(
-						            panel4Layout.createSequentialGroup().addComponent(checkBox4).addContainerGap(131,
-						                Short.MAX_VALUE)))));
-						panel4Layout.setVerticalGroup(panel4Layout.createParallelGroup().addGroup(
-						    panel4Layout.createSequentialGroup().addGap(32, 32, 32).addGroup(
-						        panel4Layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
-						            .addComponent(checkBox2).addComponent(comboBox2, GroupLayout.PREFERRED_SIZE,
-						                GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)).addGap(18, 18, 18)
-						        .addComponent(checkBox3).addGap(18, 18, 18).addComponent(checkBox4).addContainerGap(
-						            128, Short.MAX_VALUE)));
-					}
-					tabbedPane4.addTab("Other", panel4);
-
-					//======== panel2 ========
-					{
-						panel2.setBackground(Color.darkGray);
-
-						//---- label10 ----
-						label10.setText("Dynamic Woodcutter");
-						label10.setFont(label10.getFont().deriveFont(label10.getFont().getSize() + 8f));
-						label10.setBackground(Color.darkGray);
-
-						//---- button2 ----
-						button2.setText("Go to thread");
-						button2.setBackground(Color.darkGray);
-						button2.addActionListener(new ActionListener() {
-							@Override
-							public void actionPerformed(ActionEvent e) {
-								button2ActionPerformed(e);
-							}
-						});
-
-						//---- label11 ----
-						label11.setText("Current version:");
-						label11.setFont(label11.getFont().deriveFont(label11.getFont().getSize() + 1f));
-						label11.setBackground(Color.darkGray);
-
-						//---- label16 ----
-						label16.setText("Latest version:");
-						label16.setFont(label16.getFont().deriveFont(label16.getFont().getSize() + 1f));
-						label16.setBackground(Color.darkGray);
-
-						//---- label17 ----
-						label17.setFont(label17.getFont().deriveFont(label17.getFont().getSize() + 1f));
-						label17.setBackground(Color.darkGray);
-						label17.setText(Double.toString(scriptVersion));
-
-						//---- label18 ----
-						label18.setFont(label18.getFont().deriveFont(label18.getFont().getSize() + 1f));
-						label18.setBackground(Color.darkGray);
-						label18.setText(Double.toString(currVer));
-
-						//======== scrollPane1 ========
-						{
-							scrollPane1.setBackground(Color.darkGray);
-
-							//---- textArea1 ----
-							textArea1.setWrapStyleWord(true);
-							textArea1.setLineWrap(true);
-							textArea1
-							    .setText("Thanks for using Dynamic Woodcutter please leave feedback on my thread. ~hlunnb");
-							textArea1.setEditable(false);
-							textArea1.setBackground(Color.white);
-							textArea1.setFont(textArea1.getFont().deriveFont(textArea1.getFont().getSize() + 1f));
-							scrollPane1.setViewportView(textArea1);
-						}
-
-						GroupLayout panel2Layout = new GroupLayout(panel2);
-						panel2.setLayout(panel2Layout);
-						panel2Layout.setHorizontalGroup(panel2Layout.createParallelGroup().addGroup(
-						    panel2Layout.createSequentialGroup().addContainerGap().addGroup(
-						        panel2Layout.createParallelGroup().addGroup(
-						            panel2Layout.createSequentialGroup().addComponent(scrollPane1,
-						                GroupLayout.DEFAULT_SIZE, 262, Short.MAX_VALUE).addContainerGap()).addGroup(
-						            panel2Layout.createSequentialGroup().addComponent(label10).addContainerGap(97,
-						                Short.MAX_VALUE)).addGroup(GroupLayout.Alignment.TRAILING,
-						            panel2Layout.createSequentialGroup().addComponent(button2).addGap(101, 101, 101))
-						            .addGroup(
-						                panel2Layout.createSequentialGroup().addComponent(label11).addPreferredGap(
-						                    LayoutStyle.ComponentPlacement.RELATED).addComponent(label17)
-						                    .addContainerGap(179, Short.MAX_VALUE)).addGroup(
-						                panel2Layout.createSequentialGroup().addComponent(label16).addPreferredGap(
-						                    LayoutStyle.ComponentPlacement.RELATED).addComponent(label18)
-						                    .addContainerGap(179, Short.MAX_VALUE)))));
-						panel2Layout.linkSize(SwingConstants.HORIZONTAL, new Component[] { label11, label16 });
-						panel2Layout.setVerticalGroup(panel2Layout.createParallelGroup().addGroup(
-						    panel2Layout.createSequentialGroup().addContainerGap().addComponent(label10)
-						        .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED).addComponent(scrollPane1,
-						            GroupLayout.PREFERRED_SIZE, 78, GroupLayout.PREFERRED_SIZE).addGap(25, 25, 25)
-						        .addGroup(
-						            panel2Layout.createParallelGroup(GroupLayout.Alignment.TRAILING).addComponent(
-						                label11).addComponent(label17)).addGap(18, 18, 18).addGroup(
-						            panel2Layout.createParallelGroup(GroupLayout.Alignment.TRAILING).addComponent(
-						                label16).addComponent(label18)).addPreferredGap(
-						            LayoutStyle.ComponentPlacement.RELATED, 35, Short.MAX_VALUE).addComponent(button2)
-						        .addContainerGap()));
-					}
-					tabbedPane4.addTab("About", panel2);
-
-				}
-
-				//---- label1 ----
-				label1.setText("<html><img src=\"http://i.imgur.com/9MfV2.png\"></img> ");
-				label1.setBackground(Color.darkGray);
-
-				//---- button1 ----
-				button1.setText("Start");
-				button1.setBackground(Color.darkGray);
-				button1.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						button1ActionPerformed(e);
-					}
-				});
-
-				GroupLayout panel3Layout = new GroupLayout(panel3);
-				panel3.setLayout(panel3Layout);
-				panel3Layout.setHorizontalGroup(panel3Layout.createParallelGroup().addGroup(
-				    panel3Layout.createSequentialGroup().addContainerGap().addGroup(
-				        panel3Layout.createParallelGroup(GroupLayout.Alignment.TRAILING, false).addComponent(
-				            tabbedPane4, GroupLayout.Alignment.LEADING, 0, 0, Short.MAX_VALUE).addGroup(
-				            GroupLayout.Alignment.LEADING,
-				            panel3Layout.createSequentialGroup().addComponent(label1, GroupLayout.PREFERRED_SIZE,
-				                GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addGap(4, 4, 4).addComponent(
-				                button1))).addContainerGap(12, Short.MAX_VALUE)));
-				panel3Layout.setVerticalGroup(panel3Layout.createParallelGroup().addGroup(
-				    panel3Layout.createSequentialGroup().addContainerGap().addComponent(tabbedPane4,
-				        GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addGap(4, 4,
-				        4).addGroup(
-				        panel3Layout.createParallelGroup().addComponent(label1, GroupLayout.PREFERRED_SIZE,
-				            GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addGroup(
-				            panel3Layout.createSequentialGroup().addGap(30, 30, 30).addComponent(button1)))
-				        .addContainerGap(15, Short.MAX_VALUE)));
-			}
-
-			GroupLayout contentPaneLayout = new GroupLayout(contentPane);
-			contentPane.setLayout(contentPaneLayout);
-			contentPaneLayout.setHorizontalGroup(contentPaneLayout.createParallelGroup().addGroup(
-			    contentPaneLayout.createSequentialGroup().addGap(240, 240, 240).addComponent(button3).addContainerGap(
-			        69, Short.MAX_VALUE)).addComponent(panel3, GroupLayout.Alignment.TRAILING,
-			    GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE));
-			contentPaneLayout.setVerticalGroup(contentPaneLayout.createParallelGroup().addGroup(
-			    contentPaneLayout.createSequentialGroup().addComponent(panel3, GroupLayout.PREFERRED_SIZE,
-			        GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(
-			        LayoutStyle.ComponentPlacement.RELATED).addComponent(button3).addContainerGap(
-			        GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)));
-			pack();
-			setLocationRelativeTo(getOwner());
-		}
-
-		private JButton button3;
-		private JPanel panel3;
-		private JTabbedPane tabbedPane4;
-		private JPanel panel5;
-		private JLabel label2;
-		private JTextField textField1;
-		private JLabel label3;
-		private JLabel label4;
-		private JComboBox comboBox1;
-		private JCheckBox checkBox1;
-		private JLabel label8;
-		private JTextField textField2;
-		private JLabel label9;
-		private JComboBox comboBox5;
-		private JRadioButton radioButton1;
-		private JRadioButton radioButton2;
-		private JPanel panel1;
-		private JLabel label12;
-		private JLabel label13;
-		private JLabel label14;
-		private JLabel label15;
-		private JComboBox comboBox6;
-		private JComboBox comboBox7;
-		private JComboBox comboBox8;
-		private JComboBox comboBox10;
-		private JPanel panel4;
-		private JCheckBox checkBox2;
-		private JCheckBox checkBox3;
-		private JComboBox comboBox2;
-		private JCheckBox checkBox4;
-		private JPanel panel2;
-		private JLabel label10;
-		private JButton button2;
-		private JLabel label11;
-		private JLabel label16;
-		private JLabel label17;
-		private JLabel label18;
-		private JScrollPane scrollPane1;
-		private JTextArea textArea1;
-		private JLabel label1;
-		private JButton button1;
-
-	} // End of GUI
-
-	public final int CLERKS = 2593; // public final int[] CLERKS = new int[] { 2241, 2240, 2593, 1419 };
-	public final int BANKERS = 3416; // public final int[] BANKERS = new int[] { 3293, 3416, 2718, 3418 };
+	public final int CLERKS = 2593; // 2241, 2240, 2593, 1419
+	public final int BANKERS = 3416; // 3293, 3416, 2718, 3418
 	public final int GE_INTERFACE = 105;
 	public final int GE_CLOSE = 14;
 	public final int SEARCH = 389;
@@ -2438,7 +2603,7 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 	}
 
 	/**
-	 * Sells items from the Grand Exchange if it's open
+	 * Sells items to the Grand Exchange if it's open
 	 * 
 	 * @param itemName item to sell
 	 * @param slotNumber slot number to sell from (1-5)
@@ -2880,7 +3045,6 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 	 */
 	public GEItem lookup(final int itemID) {
 		try {
-
 			final URL url = new URL(HOST + GET + itemID);
 			final BufferedReader br = new BufferedReader(new InputStreamReader(url.openStream()));
 			String input;
@@ -3211,7 +3375,6 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 			}
 			return true;
 		}
-
 	}
 
 	private interface GEBuyMethods {
@@ -3339,24 +3502,29 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 		return null;
 	}
 
-	private void moveCamera(RSObject t) {
-		switch (random(0, 2)) {
-			case 0:
-				switch (random(0, 2)) {
-					case 0:
-						antiBan = "moveCamera Randomly";
-						camera.moveRandomly(random(500, 1000));
-						break;
-					case 1:
-						antiBan = "moveCamera setPitch";
-						camera.setPitch(100);
-						break;
-				}
-			case 1:
-				antiBan = "moveCamera turnTo";
-				camera.turnTo(t);
-				break;
-		}
+	public BufferedImage getImage(String fileName, String imageURL) {
+		try {
+			File dir = new File(getCacheDirectory() + File.separator + "Images");
+			if (!dir.exists()) {
+				dir.mkdir();
+			}
+			File f = new File(getCacheDirectory() + File.separator + "Images" + File.separator + fileName);
+			if (!f.exists()) {
+				BufferedImage image = null;
+				URL url = new URL(imageURL);
+				image = ImageIO.read(url);
+				ImageIO.write((BufferedImage) image, "PNG", f);
+				return image;
+			}
+			BufferedImage img = ImageIO.read(f);
+			return img;
+		} catch (Exception e) {}
+		return null;
+	}
+
+	private void moveCamera() {
+		antiBan = "Moving camera angle up.";
+		camera.setPitch(100);
 		antiBan = "";
 	}
 
@@ -3389,54 +3557,59 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 		k += 15;
 		if (num >= k && num < k + 15) // 85-100
 			j = 8;
-		if (timer < System.currentTimeMillis()) {
+		if (antibanTimer < System.currentTimeMillis()) {
 			switch (j) {
 				case 0:
-					antiBan = "0 Advanced Camera";
+					antiBan = "Advanced camera movement.";
 					advancedCameraMovement();
 					break;
 				case 1:
-					antiBan = "1 mouse.moveOffScreen";
+					antiBan = "Moving mouse off screen.";
 					mouse.moveOffScreen();
 					sleep(random(1000, 1500));
 					break;
 				case 2:
-					antiBan = "2 mouse.moveRandomly and sleep";
-					mouse.moveRandomly(200, 600);
+					antiBan = "Moving mouse randomly and sleeping.";
+					mouse.moveRandomly(200, 400);
 					sleep(random(300, 500));
 					break;
 				case 3:
-					antiBan = "3 mouse.moveRandomly";
+					antiBan = "Moving mouse randomly.";
 					mouse.moveRandomly(random(100, 500));
 					break;
 				case 4:
-					antiBan = "4 mouse.moveSlightly";
+					antiBan = "Moving mouse slightly.";
 					mouse.moveSlightly();
 					sleep(random(300, 500));
 					break;
 				case 5:
-					antiBan = "5 skills.doHover INTERFACE";
+					antiBan = "Checking skill.";
 					skills.doHover(Skills.INTERFACE_WOODCUTTING);
 					sleep(random(500, 2500));
 					break;
 				case 6:
-					antiBan = "6 mouse.move";
+					antiBan = "Moving mouse to random point.";
 					mouse.move(random(527, 200), random(744, 464));
 					break;
 				case 7:
-					antiBan = "7 camera.moveRandomly";
-					for (int i = 0; i <= random(0, 3); i++) { // (0, n) n is number of repeats
-						camera.moveRandomly(random(300, 800));
+					antiBan = "Moving camera randomly.";
+					for (int i = 0; i <= random(0, 3); i++) { // (0, n) n is number
+						// of repeats
+						camera.moveRandomly(random(200, 400));
 					}
 					break;
 				case 8:
-					antiBan = "8 camera.setPitch";
+					antiBan = "Moving camera angle up.";
 					camera.setPitch(100);
 					break;
 				default:
 					break;
 			}
-			timer = System.currentTimeMillis() + random(5000, 15000);
+			if (powerchop) {
+				antibanTimer = System.currentTimeMillis() + random(15000, 60000);
+			} else {
+				antibanTimer = System.currentTimeMillis() + random(5000, 15000);
+			}
 		}
 		antiBan = "";
 	}
@@ -3476,38 +3649,18 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 	public void messageReceived(MessageEvent e) {
 		String m = e.getMessage();
 		if (m.contains("just advanced a Firemaking")) {
-			if (takeScreenshotOnLevel) {
-				env.saveScreenshot(true);
-				log("Taking screenshot.");
-			}
 			levelsGained2++;
 		}
 		if (m.contains("just advanced a Woodcutting")) {
-			if (takeScreenshotOnLevel) {
-				env.saveScreenshot(true);
-				log("Taking screenshot.");
-			}
 			levelsGained++;
 		}
 		if (m.contains("just advanced 2 Wood")) {
-			if (takeScreenshotOnLevel) {
-				env.saveScreenshot(true);
-				log("Taking screenshot.");
-			}
 			levelsGained += 2;
 		}
 		if (m.contains("just advanced 3 Wood")) {
-			if (takeScreenshotOnLevel) {
-				env.saveScreenshot(true);
-				log("Taking screenshot.");
-			}
 			levelsGained += 3;
 		}
 		if (m.contains("just advanced 4 Wood")) {
-			if (takeScreenshotOnLevel) {
-				env.saveScreenshot(true);
-				log("Taking screenshot.");
-			}
 			levelsGained += 4;
 		}
 		if (m.contains("can't light a fire")) {
@@ -3516,19 +3669,12 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 		if (m.contains("the ladder has been completely destroyed")) {
 			sawLamp = true;
 		}
-		//		if (m.contains("Ramsey, is that you?")) {
-		//			keyboard.sendText("Shh.", true);
-		//		}
+		// if (m.contains("Ramsey, is that you?")) {
+		// keyboard.sendText("Shh.", true);
+		// }
 	}
 
 	public State getState() {
-		if ((wcLvl() >= stopAtWC || after60WC == 1) || (fmLvl() >= stopAtFM && afterXFM == 1)) {
-			status = "Ending";
-			end = true;
-		}
-		if (fmLvl() >= stopAtFM && afterXFM == 0) {
-			trainFM = false;
-		}
 		if (interfaces.get(244).containsText("may I ask you to speak") || needTutoring) {
 			status = "GE Tutor";
 			needTutoring = true;
@@ -3605,22 +3751,23 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 				end = true;
 			}
 		}
-		if (wcLvl() >= 60 && after60WC == 2) {
+		if (wcLvl() >= 60 && yewAfter60) {
 			status = "Yews";
+			useBank = true;
 			return State.YEW;
 		}
-		if (trainFM && fmLvl() < stopAtFM) {
+		if (trainFM) {
 			if (fmLvl() >= 30) {
 				if (wcLvl() >= 30) {
-					if (willowLocation == 0) {
-						status = "Burn Willows";
-						return State.WILLOWLUMB;
-					}
 					if (willowLocation == 1) {
 						status = "Burn Willows";
 						return State.WILLOWRIMM;
 					}
 					if (willowLocation == 2) {
+						status = "Burn Willows";
+						return State.WILLOWLUMB;
+					}
+					if (willowLocation == 3) {
 						status = "Burn Willows";
 						return State.WILLOWPORT;
 					}
@@ -3642,26 +3789,114 @@ public class DynamicWoodcutter extends Script implements PaintListener, MouseLis
 			}
 		}
 		if (wcLvl() >= 30) {
-			if (willowLocation == 0) {
-				status = "Willows";
-				return State.WILLOWRIMM;
-			}
 			if (willowLocation == 1) {
 				status = "Willows";
-				return State.WILLOWLUMB;
+				if (sellWillow) {
+					useBank = false;
+					drop = false;
+					powerchop = false;
+				}
+				if (bankWillow)
+					useBank = true;
+				else
+					useBank = false;
+				if (dropWillow)
+					drop = true;
+				else
+					drop = false;
+				if (powerchopWillow)
+					powerchop = true;
+				else
+					powerchop = false;
+				return State.WILLOWRIMM;
 			}
 			if (willowLocation == 2) {
 				status = "Willows";
+				if (sellWillow) {
+					useBank = false;
+					drop = false;
+					powerchop = false;
+				}
+				if (bankWillow)
+					useBank = true;
+				else
+					useBank = false;
+				if (dropWillow)
+					drop = true;
+				else
+					drop = false;
+				if (powerchopWillow)
+					powerchop = true;
+				else
+					powerchop = false;
+				return State.WILLOWLUMB;
+			}
+			if (willowLocation == 3) {
+				status = "Willows";
+				sellWillow = false;
+				if (bankWillow)
+					useBank = true;
+				else
+					useBank = false;
+				if (dropWillow)
+					drop = true;
+				else
+					drop = false;
+				if (powerchopWillow)
+					powerchop = true;
+				else
+					powerchop = false;
 				return State.WILLOWPORT;
 			}
-		}
-		if (wcLvl() < 15) {
-			status = "Trees";
-			return State.TREE;
+			if (willowLocation == 4) {
+				status = "Willows";
+				sellWillow = false;
+				if (bankWillow)
+					useBank = true;
+				else
+					useBank = false;
+				if (dropWillow)
+					drop = true;
+				else
+					drop = false;
+				if (powerchopWillow)
+					powerchop = true;
+				else
+					powerchop = false;
+				return State.WILLOWDRAY;
+			}
 		}
 		if (wcLvl() >= 15 && wcLvl() < 30) {
 			status = "Oaks";
+			if (bankOak)
+				useBank = true;
+			else
+				useBank = false;
+			if (dropOak)
+				drop = true;
+			else
+				drop = false;
+			if (powerchopOak)
+				powerchop = true;
+			else
+				powerchop = false;
 			return State.OAK;
+		}
+		if (wcLvl() < 15) {
+			status = "Trees";
+			if (dropTree)
+				drop = true;
+			else
+				drop = false;
+			if (bankTree)
+				useBank = true;
+			else
+				useBank = false;
+			if (sellTree) {
+				drop = false;
+				useBank = false;
+			}
+			return State.TREE;
 		}
 		status = "Error.";
 		return State.error;
