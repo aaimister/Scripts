@@ -1,6 +1,6 @@
 /**
  * @author Aaimister
- * @version 1.23 ©2010-2011 Aaimister, No one except Aaimister has the right to
+ * @version 1.24 ©2010-2011 Aaimister, No one except Aaimister has the right to
  *          modify and/or spread this script without the permission of Aaimister.
  *          I'm not held responsible for any damage that may occur to your
  *          property.
@@ -76,7 +76,7 @@ import org.rsbot.script.wrappers.RSPath;
 import org.rsbot.script.wrappers.RSPlayer;
 import org.rsbot.script.wrappers.RSTile;
 
-@ScriptManifest(authors = { "Aaimister" }, website = "http://3ff8d067.any.gs", name = "Aaimister's Roach Killer v1.23", keywords = "Combat", version = 1.23, description = ("Kills roaches in Edgville."))
+@ScriptManifest(authors = { "Aaimister" }, website = "http://3ff8d067.any.gs", name = "Aaimister's Roach Killer v1.24", keywords = "Combat", version = 1.24, description = ("Kills roaches in Edgville."))
 public class AaimistersRoaches  extends Script implements PaintListener, MouseListener, MessageListener {
 
 	private static interface AM {
@@ -114,6 +114,7 @@ public class AaimistersRoaches  extends Script implements PaintListener, MouseLi
 	private final String[] colorstring = { "Black", "Blue", "Brown", "Cyan", "Green", "Lime", "Orange", "Pink", "Purple", "Red", "White", "Yellow" };
 	private String[] lootString;
 	private ArrayList<String> doLoot = new ArrayList<String>(50);
+	private ArrayList<String> pList = new ArrayList<String>();
 	private ArrayList<Integer> potions = new ArrayList<Integer>();
 
 	Updater u = new Updater();
@@ -219,6 +220,8 @@ public class AaimistersRoaches  extends Script implements PaintListener, MouseLi
 	int dotCount;
 	int v,z,x;
 	int id;
+	int pot;
+	int total;
 	int maxBetween;
 	int minBetween;
 	int maxLength;
@@ -362,7 +365,7 @@ public class AaimistersRoaches  extends Script implements PaintListener, MouseLi
 	}
 
 	public double getVersion() { 
-		return 1.23;
+		return 1.24;
 	}
 
 	public boolean onStart() {
@@ -530,7 +533,69 @@ public class AaimistersRoaches  extends Script implements PaintListener, MouseLi
 			return ".";
 		}
 	}
+	
+	private boolean getPotions() {
+		if (pot > total) {
+			return true;
+		}
+		for (int i = 0; i < potions.size(); i++) {
+			if (potions.get(i) > 0) {
+				int p = 0;
+				for (int b = 0; b < bank.getItems().length; b++) {
+					if (bank.getItems()[b].getName().contains(pList.get(i))) {
+						p = bank.getItems()[b].getID();
+						b = bank.getItems().length;
+					}
+				}
+				if (bank.getItem(p) != null) {
+					bank.withdraw(p, potions.get(i));
+					idle = 0;
+				}
+			}
+		}
+		return false;
+	}
+	
+	private void usePotions() {
+		//Attack, Defence, Strength Potions
+		for (int i = 0; i < 3; i++) {
+			if (potions.get(i) > 0) {
+				if (skills.getCurrentLevel(i) - skills.getRealLevel(i) <= 1) {
+					try {
+						if (inventory.contains(pList.get(i))) {
+							inventory.getItem(pList.get(i)).interact("Drink " + pList.get(i));
+							sleep(304, 513);
+						}
+					} catch (Exception e) {
 
+					}
+				}
+			}
+		}
+		//Combat Potion
+		if (skills.getCurrentLevel(0) - skills.getRealLevel(0) <= 1 && skills.getCurrentLevel(2) - skills.getRealLevel(2) <= 1) {
+			try {
+				if (inventory.contains(pList.get(3))) {
+					inventory.getItem(pList.get(3)).interact("Drink " + pList.get(3));
+					sleep(150, 300);
+				}
+			} catch (Exception e) {
+				
+			}
+		}
+		//Super Strength Potion
+		if (skills.getCurrentLevel(2) - skills.getRealLevel(2) <= 1) {
+			try {
+				if (inventory.contains(pList.get(4))) {
+					inventory.getItem(pList.get(4)).interact("Drink " + pList.get(4));
+					sleep(150, 300);
+				}
+			} catch (Exception e) {
+				
+			}
+		}
+	}
+	
 	private String Location() {
 		if (AM.bankArea.contains(getMyPlayer().getLocation())) {
 			return "Bank";
@@ -871,6 +936,7 @@ public class AaimistersRoaches  extends Script implements PaintListener, MouseLi
 			}
 			break;
 		case TOBANK:
+			pot = 0;
 			notChosen = true;
 			if (idle > 8) {
 				clicked = false;
@@ -946,6 +1012,9 @@ public class AaimistersRoaches  extends Script implements PaintListener, MouseLi
 						combat.setSpecialAttack(true);
 						sleep(25, 100);
 					}
+					if (pAttack > 0 || pDefence > 0 || pSStrength > 0 || pStrength > 0 || pCombat > 0) {
+						usePotions();
+					}
 					if (roach().isOnScreen()) {
 						idle++;
 						if (!attacked) {
@@ -979,7 +1048,7 @@ public class AaimistersRoaches  extends Script implements PaintListener, MouseLi
 		case BANK:
 			status = "Banking";
 			clicked = false;
-			if (idle > 3) {
+			if (idle > 4) {
 				opened = false;
 				bankedOpen = false;
 				idle = 0;
@@ -1015,6 +1084,12 @@ public class AaimistersRoaches  extends Script implements PaintListener, MouseLi
 				} else {
 					opened = false;
 					idle++;
+					if (getPotions()) {
+						sleep(350, 500);
+					} else {
+						pot++;
+						return random(100, 156);
+					}
 					if (!bankedOpen && bank.isOpen()) {
 						if (inventory.getCount() > 0) {
 							bank.depositAll();
@@ -1732,7 +1807,7 @@ public class AaimistersRoaches  extends Script implements PaintListener, MouseLi
 				g.drawString("Attack XP/h: " + formatter.format((long)atxpHour), 264, 404);
 				g.drawString("Level In: " + formatTime(attimeToLvl), 264, 418);
 				g.drawString("Attack XP to Lvl: " + formatter.format((long)atxpToLvl), 264, 433);
-				g.drawString("Current Lvl: " + (skills.getCurrentLevel(0)), 264, 447);
+				g.drawString("Current Lvl: " + (skills.getRealLevel(0)), 264, 447);
 				g.drawString("Gained Lvl(s): " + formatter.format((long)atgainedLvl), 264, 463);
 			}
 			if (StatST) {
@@ -1743,7 +1818,7 @@ public class AaimistersRoaches  extends Script implements PaintListener, MouseLi
 				g.drawString("Strength XP/h: " + formatter.format((long)stxpHour), 264, 404);
 				g.drawString("Level In: " + formatTime(sttimeToLvl), 264, 418);
 				g.drawString("Strength XP to Lvl: " + formatter.format((long)stxpToLvl), 264, 433);
-				g.drawString("Current Lvl: " + (skills.getCurrentLevel(2)), 264, 447);
+				g.drawString("Current Lvl: " + (skills.getRealLevel(2)), 264, 447);
 				g.drawString("Gained Lvl(s): " + formatter.format((long)stgainedLvl), 264, 463);
 			}
 			if (StatDF) {
@@ -1754,7 +1829,7 @@ public class AaimistersRoaches  extends Script implements PaintListener, MouseLi
 				g.drawString("Defence XP/h: " + formatter.format((long)dfxpHour), 264, 404);
 				g.drawString("Level In: " + formatTime(dftimeToLvl), 264, 418);
 				g.drawString("Defence XP to Lvl: " + formatter.format((long)dfxpToLvl), 264, 433);
-				g.drawString("Current Lvl: " + (skills.getCurrentLevel(1)), 264, 447);
+				g.drawString("Current Lvl: " + (skills.getRealLevel(1)), 264, 447);
 				g.drawString("Gained Lvl(s): " + formatter.format((long)dfgainedLvl), 264, 463);
 			}
 			if (StatRG) {
@@ -1765,7 +1840,7 @@ public class AaimistersRoaches  extends Script implements PaintListener, MouseLi
 				g.drawString("Range XP/h: " + formatter.format((long)rgxpHour), 264, 404);
 				g.drawString("Level In: " + formatTime(rgtimeToLvl), 264, 418);
 				g.drawString("Range XP to Lvl: " + formatter.format((long)rgxpToLvl), 264, 433);
-				g.drawString("Current Lvl: " + (skills.getCurrentLevel(4)), 264, 447);
+				g.drawString("Current Lvl: " + (skills.getRealLevel(4)), 264, 447);
 				g.drawString("Gained Lvl(s): " + formatter.format((long)rggainedLvl), 264, 463);
 			}
 			if (StatCO) {
@@ -1776,7 +1851,7 @@ public class AaimistersRoaches  extends Script implements PaintListener, MouseLi
 				g.drawString("Cons. XP/h: " + formatter.format((long)coxpHour), 264, 404);
 				g.drawString("Level In: " + formatTime(cotimeToLvl), 264, 418);
 				g.drawString("Cons. XP to Lvl: " + formatter.format((long)coxpToLvl), 264, 433);
-				g.drawString("Current Lvl: " + (skills.getCurrentLevel(3)), 264, 447);
+				g.drawString("Current Lvl: " + (skills.getRealLevel(3)), 264, 447);
 				g.drawString("Gained Lvl(s): " + formatter.format((long)cogainedLvl), 264, 463);
 			}
 			//% Bar
@@ -1791,7 +1866,7 @@ public class AaimistersRoaches  extends Script implements PaintListener, MouseLi
 			g.fillRect(6, 320, Bar, 16);
 			g.setColor(White);
 			g.setFont(Cam);
-			g.drawString("" + skills.getPercentToNextLevel(getStat()) + "% to lvl " + (skills.getCurrentLevel(getStat()) + 1) + currentStat, 194, 332);
+			g.drawString("" + skills.getPercentToNextLevel(getStat()) + "% to lvl " + (skills.getRealLevel(getStat()) + 1) + currentStat, 194, 332);
 			//Shadow
 			g.setColor(White90);
 			g.fillRect(4, 318, 512, 10);
@@ -2007,16 +2082,26 @@ public class AaimistersRoaches  extends Script implements PaintListener, MouseLi
 				specialWeapon = true;
 				weaponWait = Integer.parseInt(weaponTime.getValue().toString());
 			}
-			pCombat = Integer.parseInt(potCombat.getValue().toString());
-			potions.add(pCombat);
 			pAttack = Integer.parseInt(potAttack.getValue().toString());
 			potions.add(pAttack);
-			pStrength = Integer.parseInt(potStrength.getValue().toString());
-			potions.add(pStrength);
-			pSStrength = Integer.parseInt(potSStrength.getValue().toString());
-			potions.add(pSStrength);
+			pList.add("Super attack");
 			pDefence = Integer.parseInt(potDefence.getValue().toString());
 			potions.add(pDefence);
+			pList.add("Super defence");
+			pSStrength = Integer.parseInt(potSStrength.getValue().toString());
+			potions.add(pSStrength);
+			pList.add("Super strength");
+			pCombat = Integer.parseInt(potCombat.getValue().toString());
+			potions.add(pCombat);
+			pList.add("Combat potion");
+			pStrength = Integer.parseInt(potStrength.getValue().toString());
+			potions.add(pStrength);
+			pList.add("Strength potion");
+			for (int i = 0; i < potions.size(); i++) {
+				if (potions.get(i) != 0) {
+					total++;
+				}
+			}
 			X = Integer.parseInt(withText.getValue().toString());
 			food = Integer.parseInt(foodText.getValue().toString());
 			minHealth = Integer.parseInt(healText.getValue().toString());
