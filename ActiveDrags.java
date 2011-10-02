@@ -277,8 +277,8 @@ private final RenderingHints rh = new RenderingHints(
 			while(combat.getWildernessLevel()>20){
 				walking.walkTo(new RSTile(getMyPlayer().getLocation().getX(),getMyPlayer().getLocation().getY()-15));
 			}
-		inventory.getItem(8007).doClick(true);
-		sleep(random(3000,4000));
+		inventory.getItem(8007).interact("break");
+		sleep(4000);
 			break;
 		case WAIT:
 			if (players.getMyPlayer().getHPPercent() < 41) {
