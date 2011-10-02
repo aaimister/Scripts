@@ -54,6 +54,8 @@ public class ActiveDrags extends Script implements PaintListener, MessageListene
 		food=Integer.parseInt(s.split(",")[0]);
 		amount =Integer.parseInt(s.split(",")[1]);
 		startTime=System.currentTimeMillis();
+		hidep=hidep;
+		bonep=bonep;
 		return true;
 	}
 	public State getState(){
@@ -109,7 +111,7 @@ public class ActiveDrags extends Script implements PaintListener, MessageListene
 		return boneCount;
 	}
 	public int PerHour(int i){
-		return (int) Math.ceil(i * 3600000D / startTime-System.currentTimeMillis());
+		return (int) Math.ceil(i * 3600000D / Math.abs(startTime-System.currentTimeMillis()));
 	}
 	@Override
 	public void messageReceived(MessageEvent arg0) {
@@ -218,16 +220,18 @@ private final RenderingHints rh = new RenderingHints(
 			}
 		}
 	}
+	int hidep;
+	int bonep;
 	@Override
 	public int loop() {
 		status= getState().toString().toLowerCase();
 		switch(paintState){
 		case 0:
 			line[0]= "ActiveDrags - Profit";
-			line[1]="Hides: "+ getHides()+ " - "+ (grandExchange.lookup(HIDE).getGuidePrice()* getHides());
-			line[2]="Hides/h: "+ PerHour(getHides())+ " - "+ (grandExchange.lookup(HIDE).getGuidePrice()* PerHour(getHides()));
-			line[3]="Bones: "+ getBones() + " - "+ (grandExchange.lookup(BONES).getGuidePrice()* getBones());
-			line[4]="Bones/h: "+ PerHour(getBones()) + " - "+ (grandExchange.lookup(BONES).getGuidePrice()* PerHour(getBones()));
+			line[1]="Hides: "+ getHides()+ " - "+ (hidep* getHides());
+			line[2]="Hides/h: "+ PerHour(getHides())+ " - "+ (hidep* PerHour(getHides()));
+			line[3]="Bones: "+ getBones() + " - "+ (bonep* getBones());
+			line[4]="Bones/h: "+ PerHour(getBones()) + " - "+ (bonep* PerHour(getBones()));
 			break;
 		case 1:
 			break;
@@ -266,10 +270,13 @@ private final RenderingHints rh = new RenderingHints(
 			break;
 		case FIGHT:
 			attackNearestDragon();
+			
 			break;
 		case LOOT:
+			if (inventory.isFull() && inventory.contains(food)) {
+				inventory.getItem(food).interact("Eat");
+			}
 			groundItems.getNearest(HIDE,BONES,D_WEED).interact("take");
-			inventory.dropItem(995);
 			sleep(random(500,1000));
 			break;
 		
@@ -284,6 +291,7 @@ private final RenderingHints rh = new RenderingHints(
 			if (players.getMyPlayer().getHPPercent() < 41) {
 				inventory.getItem(food).interact("Eat");
 			}
+			inventory.dropAllExcept(HIDE,BONES,D_WEED,8007,food);
 			if(random(1,30)==3){
 				camera.setAngle(camera.getAngle()+random(3,90));
 			}
