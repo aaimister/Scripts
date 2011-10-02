@@ -1,6 +1,6 @@
 /**
  * @author Aaimister
- * @version 1.23 ©2010-2011 Aaimister, No one except Aaimister has the right to
+ * @version 1.24 ©2010-2011 Aaimister, No one except Aaimister has the right to
  *          modify and/or spread this script without the permission of Aaimister.
  *          I'm not held responsible for any damage that may occur to your
  *          property.
@@ -76,7 +76,7 @@ import org.rsbot.script.wrappers.RSPath;
 import org.rsbot.script.wrappers.RSPlayer;
 import org.rsbot.script.wrappers.RSTile;
 
-@ScriptManifest(authors = { "Aaimister" }, website = "http://3ff8d067.any.gs", name = "Aaimister's Roach Killer v1.23", keywords = "Combat", version = 1.23, description = ("Kills roaches in Edgville."))
+@ScriptManifest(authors = { "Aaimister" }, website = "http://3ff8d067.any.gs", name = "Aaimister's Roach Killer v1.24", keywords = "Combat", version = 1.24, description = ("Kills roaches in Edgville."))
 public class AaimistersRoaches  extends Script implements PaintListener, MouseListener, MessageListener {
 
 	private static interface AM {
@@ -365,7 +365,7 @@ public class AaimistersRoaches  extends Script implements PaintListener, MouseLi
 	}
 
 	public double getVersion() { 
-		return 1.23;
+		return 1.24;
 	}
 
 	public boolean onStart() {
