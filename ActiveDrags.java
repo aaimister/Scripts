@@ -6,21 +6,26 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.util.LinkedList;
+import java.awt.*;
+import javax.imageio.ImageIO;
+import javax.swing.SwingUtilities;
 
-import javax.swing.JOptionPane;
-
-import org.Constants.MISC;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 import org.rsbot.event.events.MessageEvent;
 import org.rsbot.event.listeners.MessageListener;
 import org.rsbot.event.listeners.PaintListener;
 import org.rsbot.script.Script;
 import org.rsbot.script.ScriptManifest;
+import org.rsbot.script.methods.MethodContext;
+import org.rsbot.script.methods.Skills;
 import org.rsbot.script.wrappers.RSNPC;
 import org.rsbot.script.wrappers.RSTile;
 import org.rsbot.script.wrappers.RSTilePath;
 import org.rsbot.script.wrappers.RSWeb;
 
-@ScriptManifest(authors = { "Swipe" }, keywords = "Combat, loot", name = "ActiveDrags", version = 1.01, description = "Kills Green Drags EAST varrock teletab")
+@ScriptManifest(authors = { "Swipe" }, keywords = "Combat, loot", name = "ActiveDrags", version = 1.02, description = "AIO Dragon Killer")
 public class ActiveDrags extends Script implements PaintListener,
 MessageListener {
 	final static int HIDE = 1753;
@@ -39,6 +44,7 @@ MessageListener {
 	public final static RSTile W_FALALOC = new RSTile(2965, 3377);
 	public final static RSTile W_DRAGLOC = new RSTile(2978, 3616);
 	public static final RSTile[] W_DITCHPATH = { new RSTile(2944, 3369),
+		
 		new RSTile(2945, 3376), new RSTile(2949, 3379),
 		new RSTile(2953, 3382), new RSTile(2958, 3382),
 		new RSTile(2963, 3384), new RSTile(2964, 3389),
@@ -69,6 +75,17 @@ MessageListener {
 		new RSTile(2982, 3601), new RSTile(2981, 3606),
 		new RSTile(2979, 3611), new RSTile(2977, 3616) };
 	//
+	//Tunnels
+	public final static RSTile TUNNEL_LOC = new RSTile(3164, 3559);
+	public final static int RIFTID = 28892;
+	public final static Point PROCEED = new Point(265,170);
+	public final static RSTile TUNNEL_PORT = new RSTile(3290, 5464);
+	public final static int PORTAL =28779;
+	public final static RSTile DRAG_PORTAL = new RSTile(3302,5469);
+	public final static RSTile TUNNEL_DRAGS = new RSTile(3309, 5452);
+	public final static RSTile TUNNEL_DOWN = new RSTile(3293, 3479);
+	
+	//
 	public final static int[] dragons = { 4679, 4680, 941 };
 	private static final Color MOUSE_COLOR = new Color(139, 69, 19),
 	MOUSE_BORDER_COLOR = new Color(0, 153, 0),
@@ -77,6 +94,7 @@ MessageListener {
 	long startTime;
 	Point p;
 	Point p2;
+	Tracker T;
 	int foodArray[] = { 333, 329, 361, 379, 373, 385, 15266 };
 	int SETLOC = 0; // Green East, Green West, Green Chaos, ...
 	int paintState = 0;// 0,1,2
@@ -86,11 +104,27 @@ MessageListener {
 	int boneCount = 0;
 	MyGUI m;
 	String status = "";
+		   private Image getImage(String url) {
+        try {
+            return ImageIO.read(new URL(url));
+        } catch(IOException e) {
+            return null;
+        }
+    }
+
+    private final Color color1 = new Color(255, 255, 255);
+    private final Color color2 = new Color(51, 51, 51);
+
+    private final Font font1 = new Font("Arial", 0, 9);
+    private final Font font2 = new Font("Century", 1, 13);
+
+    private final Image img1 = getImage("http://i.imgur.com/dHosK.png");
 	private final LinkedList<MousePathPoint> mousePath = new LinkedList<MousePathPoint>();
 
 	// Green Drags
-	static enum State {
-		E_DITCH, W_DITCH, FIGHT, TO_WDRAGS, TO_EDRAGS, BANK, TO_WBANK, TO_EBANK, TO_WDITCH, TO_EDITCH, TELE, EAT, WAIT, LOOT
+	static enum GState {
+		E_DITCH, W_DITCH, FIGHT, TO_WDRAGS, TO_EDRAGS, TO_TUNNEL_DRAG, TO_RIFT, ENTER_RIFT, CLICK_WARN,
+		TO_PORTAL, CLICK_PORTAL, BANK, TO_WBANK, TO_EBANK, TO_WDITCH, TO_EDITCH, TELE, EAT, WAIT, LOOT
 	}
 
 	private int food = 333;
@@ -103,70 +137,102 @@ MessageListener {
 		hidep = grandExchange.lookup(HIDE).getGuidePrice();
 		bonep = grandExchange.lookup(BONES).getGuidePrice();
 		m = new MyGUI();
-		m.setVisible(true);
+		T= new Tracker();
+		  if (SwingUtilities.isEventDispatchThread()) {
+	           m.setVisible(true);
+	        } else {
+	            try {
+	                SwingUtilities.invokeAndWait(new Runnable() {
+	                    public void run() {
+	                     m.setVisible(true);
+	                    }
+	                });
+	            } catch (InvocationTargetException ite) {
+	            } catch (InterruptedException ie) {
+	            }
+	        }
 		while (m.isVisible()) {
 			sleep(100);
 		}
 		return true;
 	}
 
-	public State getState() {
+	public GState getState() {
 		/*
 		 * Green Dragons States
 		 */
-		if (players.getMyPlayer().isInCombat()) {
-			return State.WAIT;
-		}
-		if (nearArea(E_DRAGL, 15) || nearArea(W_DRAGLOC, 15)) {
+		if (nearArea(E_DRAGL, 15) || nearArea(W_DRAGLOC, 15) || nearArea(TUNNEL_DRAGS,20)) {
+			
 			if (groundItems.getNearest(HIDE, BONES, D_WEED) != null) {
-				return State.LOOT;
+				return GState.LOOT;
 			}
-			return State.FIGHT;
+			if (players.getMyPlayer().isInCombat()) {
+				return GState.WAIT;
+			}
+			return GState.FIGHT;
 		}
 
 		if (nearArea(VARROCK, 8)) {
-			return State.TO_EBANK;
+			return GState.TO_EBANK;
 		}
 		if (nearArea(W_FALALOC, 8)) {
-			return State.TO_WBANK;
+			return GState.TO_WBANK;
 		}
 		if (nearArea(E_BANKL, 10)) {
 			if (inventory.contains(BONES)) {
-				return State.BANK;
+				return GState.BANK;
 			} else {
-				return State.TO_EDITCH;
+				return GState.TO_EDITCH;
 			}
 		}
 		if (nearArea(W_BANKLOC, 10)) {
 			if (inventory.contains(BONES)) {
-				return State.BANK;
+				return GState.BANK;
 			} else {
-				return State.TO_WDITCH;
+				return GState.TO_WDITCH;
 			}
+		}
+		if(nearArea(TUNNEL_LOC,7)){
+			if(interfaces.getAllContaining("Warning").length >0){
+				return GState.CLICK_WARN;
+			}
+			return GState.ENTER_RIFT;
+		}
+		if(nearArea(TUNNEL_DOWN, 4)){
+			return GState.TO_PORTAL;
+		}
+		if(nearArea(TUNNEL_PORT,3)){
+			return GState.CLICK_PORTAL;
+		}
+		if(nearArea(DRAG_PORTAL, 3)){
+			return GState.TO_TUNNEL_DRAG;
 		}
 		if (inventory.getCount(food) < 1
 				|| (inventory.getCount(HIDE) + inventory.getCount(BONES)) > 26) {
-			return State.TELE;
+			return GState.TELE;
 		}
 
 		if (nearArea(E_DITCHL, 5)) {
 			if (getMyPlayer().getLocation().getY() < E_DITCHL.getY()) {
-				return State.E_DITCH;
+				return GState.E_DITCH;
 			} else {
-				return State.TO_EDRAGS;
+				if(SETLOC==2){
+					return GState.TO_RIFT;
+				}
+				return GState.TO_EDRAGS;
 			}
 		}
 		if (nearArea(W_DITCHLOC, 5)) {
 			if (getMyPlayer().getLocation().getY() < W_DITCHLOC.getY()) {
-				return State.W_DITCH;
+				return GState.W_DITCH;
 			} else {
-				return State.TO_WDRAGS;
+				return GState.TO_WDRAGS;
 			}
 		}
 		/*
 		 * End Green Drag States
 		 */
-		return State.WAIT;
+		return GState.WAIT;
 	}
 
 	public int getHides() {
@@ -233,52 +299,13 @@ MessageListener {
 	@Override
 	public void onRepaint(Graphics g) {
 		drawMouse(g);
+		        Graphics2D g1 = (Graphics2D)g;
+		        g1.drawImage(img1, 0, 338, null);
+		        g1.setFont(font2);
+		        g1.setColor(color2);
+		        g1.drawString("Profit: "+(hidep * getHides())+(bonep*getBones()) + " - "+ ((hidep * PerHour(getHides())) + (bonep*PerHour(getBones())))+ " / H", 100, 396) ;
+		        g1.drawString("Exp:"+ T.addAll()+" xp - "+T.allPerHour()+ " / H" , 100, 447);
 
-		((Graphics2D) g).setRenderingHints(rh);
-		g.setColor(new Color(153, 153, 153, 213));
-		g.fillRect(74, 300, 576, 164);
-		g.setColor(new Color(0, 102, 0));
-		g.fillRect(99, 325, 77, 29);
-		g.setColor(new Color(0, 102, 0));
-		g.fillRect(98, 361, 77, 28);
-		g.setColor(new Color(0, 102, 0));
-		g.fillRect(101, 398, 76, 29);
-		g.setColor(new Color(204, 0, 51));
-		g.fillRect(628, 303, 20, 17);
-		g.setColor(new Color(153, 153, 0));
-		g.fillRect(604, 303, 22, 17);
-		g.setColor(new Color(51, 51, 51, 152));
-		g.fillRoundRect(185, 313, 413, 132, 4, 4);
-		g.setFont(new Font("Arial Black", 0, 11));
-		g.setColor(new Color(0, 0, 0, 100));
-		g.drawString("" + line[0], 236, 339);
-		g.setColor(new Color(255, 255, 255));
-		g.drawString("" + line[0], 233, 336);
-		g.setFont(new Font("Arial Black", 0, 11));
-		g.setColor(new Color(0, 0, 0, 100));
-		g.drawString("" + line[1], 235, 361);
-		g.setColor(new Color(255, 255, 255));
-		g.drawString("" + line[1], 232, 358);
-		g.setFont(new Font("Arial Black", 0, 11));
-		g.setColor(new Color(0, 0, 0, 100));
-		g.drawString("" + line[2], 235, 383);
-		g.setColor(new Color(255, 255, 255));
-		g.drawString("" + line[2], 232, 380);
-		g.setFont(new Font("Arial Black", 0, 11));
-		g.setColor(new Color(0, 0, 0, 100));
-		g.drawString("" + line[3], 236, 404);
-		g.setColor(new Color(255, 255, 255));
-		g.drawString("" + line[3], 233, 401);
-		g.setFont(new Font("Arial Black", 0, 11));
-		g.setColor(new Color(0, 0, 0, 100));
-		g.drawString("" + line[4], 237, 423);
-		g.setColor(new Color(255, 255, 255));
-		g.drawString("" + line[4], 234, 420);
-		g.setFont(new Font("Arial Black", 0, 11));
-		g.setColor(new Color(0, 0, 0, 100));
-		g.drawString("Status: " + status, 307, 312);
-		g.setColor(new Color(255, 255, 255));
-		g.drawString("Status: " + status, 304, 309);
 	}
 
 	public void attackNearestDragon() {
@@ -314,22 +341,7 @@ MessageListener {
 	public int loop() {
 		//Paint
 		status = getState().toString().toLowerCase();
-		switch (paintState) {
-		case 0:
-			line[0] = "ActiveDrags - Profit";
-			line[1] = "Hides: " + getHides() + " - " + (hidep * getHides());
-			line[2] = "Hides/h: " + PerHour(getHides()) + " - "
-			+ (hidep * PerHour(getHides()));
-			line[3] = "Bones: " + getBones() + " - " + (bonep * getBones());
-			line[4] = "Bones/h: " + PerHour(getBones()) + " - "
-			+ (bonep * PerHour(getBones()));
-			break;
-		case 1:
-			break;
-		case 2:
-			break;
-		}
-
+T.updateSkills();
 		switch (getState()) {
 		/*
 		 * Green Drag Loop
@@ -337,9 +349,13 @@ MessageListener {
 		case BANK:
 			if (bank.isOpen()) {
 				bank.depositAll();
-				bank.withdraw(food, amount);
+				if(!(inventory.getCount(food) != amount)){
+				bank.withdraw(food, amount-inventory.getCount(food));
+				}
 				sleep(500);
+				if(!inventory.contains(getTabForLoc())){
 				bank.withdraw(getTabForLoc(), 1);
+				}
 				bank.close();
 			} else {
 				bank.open();
@@ -360,6 +376,26 @@ MessageListener {
 				ctx.env.sleep(500);
 			}
 			break;
+		case TO_RIFT:
+			walkTo(TUNNEL_LOC);
+			break;
+		case ENTER_RIFT:
+			objects.getNearest(RIFTID).getModel().doClick(true);
+			sleep(500);
+			break;
+		case CLICK_WARN:
+			mouse.click(PROCEED,true);
+			sleep(500);
+			break;
+		case TO_PORTAL:
+			walkTo(TUNNEL_PORT);
+			break;
+		case CLICK_PORTAL:
+			while(!nearArea(DRAG_PORTAL,2)){
+			objects.getNearest(PORTAL).getModel().doClick(true);
+			sleep(500);
+			}
+			break;
 		case E_DITCH:
 			RSTile l = getMyPlayer().getLocation();
 			objects.getNearest(E_DITCHO).doClick();
@@ -371,7 +407,7 @@ MessageListener {
 			break;
 		case W_DITCH:
 			RSTile a = getMyPlayer().getLocation();
-			mouse.click(ctx.calc.tileToScreen(W_DITCHLOC), true);
+			mouse.click(calc.tileToScreen(W_DITCHLOC), true);
 			sleep(random(1700, 2000));
 			if (getMyPlayer().getLocation().equals(a)) {
 				log("ditch error! fixing!");
@@ -382,11 +418,14 @@ MessageListener {
 			walkTo(E_DRAGL);
 			break;
 		case TO_WDRAGS:
-			RSTilePath MyPath = walking.newTilePath(W_DRAGPATH);
+			RSTilePath aPath = walking.newTilePath(W_DRAGPATH);
 			while(calc.distanceTo(W_DRAGLOC) < 10){
-				myPath.traverse();
-				ctx.env.sleep(500);
+				aPath.traverse();
+				sleep(500);
 			}
+			break;
+		case TO_TUNNEL_DRAG:
+			walkTo(TUNNEL_DRAGS);
 			break;
 		case FIGHT:
 			attackNearestDragon();
@@ -412,7 +451,7 @@ MessageListener {
 			if (players.getMyPlayer().getHPPercent() < 41) {
 				inventory.getItem(food).interact("Eat");
 			}
-			inventory.dropAllExcept(HIDE, BONES, D_WEED, 8007, food);
+			inventory.dropAllExcept(HIDE, BONES, D_WEED, 8007,FTAB, food);
 			if (random(1, 30) == 3) {
 				camera.setAngle(camera.getAngle() + random(3, 90));
 			}
@@ -421,7 +460,7 @@ MessageListener {
 		/*
 		 * End Green Drag Loop
 		 */
-		return random(100, 300);
+		return random(100, 200);
 	}
 
 	private int getTabForLoc() {
@@ -3262,6 +3301,108 @@ MessageListener {
 		private javax.swing.JTabbedPane jTabbedPane1;
 		private javax.swing.JTextPane jTextPane1;
 		// End of variables declaration
+	}
+	/**
+	 * Created by IntelliJ IDEA. User: Tim Date: 9/8/11 Time: 5:05 PM To change this
+	 * template use File | Settings | File Templates.
+	 */
+	public class Tracker {
+		long start;
+		public int length = 40;
+		int bSkills[] = new int[7];// attack,str,def,range,mage,hp,prayer
+		int cSkills[] = new int[7];// attack,str,def,range,mage,hp,prayer
+		MethodContext m;
+		String skillNames[] = { "Attack", "Strength", "Defense", "Range", "Magic",
+				"Consitution", "Prayer" };
+
+		/**
+		 * @param methodGather
+		 *            Obtains all information to be tracked
+		 */
+		public Tracker() {
+			start = System.currentTimeMillis();
+			m = ctx;
+			bSkills[0] = m.skills.getCurrentExp(Skills.ATTACK);
+			bSkills[1] = m.skills.getCurrentExp(Skills.STRENGTH);
+			bSkills[2] = m.skills.getCurrentExp(Skills.DEFENSE);
+			bSkills[3] = m.skills.getCurrentExp(Skills.RANGE);
+			bSkills[4] = m.skills.getCurrentExp(Skills.MAGIC);
+			bSkills[5] = m.skills.getCurrentExp(Skills.CONSTITUTION);
+			bSkills[6] = m.skills.getCurrentExp(Skills.PRAYER);
+		}
+
+		/**
+		 * Updates skill exp
+		 */
+		void updateSkills() {
+			cSkills[0] = m.skills.getCurrentExp(Skills.ATTACK);
+			cSkills[1] = m.skills.getCurrentExp(Skills.STRENGTH);
+			cSkills[2] = m.skills.getCurrentExp(Skills.DEFENSE);
+			cSkills[3] = m.skills.getCurrentExp(Skills.RANGE);
+			cSkills[4] = m.skills.getCurrentExp(Skills.MAGIC);
+			cSkills[5] = m.skills.getCurrentExp(Skills.CONSTITUTION);
+			cSkills[6] = m.skills.getCurrentExp(Skills.PRAYER);
+		}
+
+		/**
+		 * Draws all possible xp gains
+		 * 
+		 * @param g
+		 * @return g
+		 */
+		public Graphics drawAnyIfChanged(Graphics g, int xl, int yl) {
+			int a = 1;
+			for (int i = 0; i < skillNames.length; i++) {
+				if (skillChanged(i)) {
+					a++;
+					g.setColor(Color.WHITE);
+					g.drawString(skillNames[i] + " exp gained: "
+							+ (cSkills[i] - bSkills[i]), xl, yl + (a * 30));
+					g.drawString(
+							skillNames[i]
+									+ " exp/h: "
+									+ (PerHour(				
+											cSkills[i] - bSkills[i])), xl, yl
+									+ (a * 30)+15);
+				}
+
+			}
+			length = (a) * 35;
+			return g;
+		}
+public int addAll(){
+	int all = 0;
+	for (int i = 0; i < skillNames.length; i++) {
+		if (skillChanged(i)) {
+			all+= cSkills[i] - bSkills[i];
+		}
+		}
+	return all;
+	
+}
+public int allPerHour(){
+	return PerHour(addAll());
+}
+		boolean skillChanged(int skill) {
+			return cSkills[skill] > bSkills[skill];
+		}
+
+		/**
+		 * 
+		 * @return if skills have been changed
+		 */
+		boolean skillsChanged() {
+			updateSkills();
+			for (int i : bSkills) {
+				for (int j : cSkills) {
+					if (j > i) {
+						return true;
+					}
+				}
+			}
+			return false;
+
+		}
 	}
 
 	@SuppressWarnings("serial")
