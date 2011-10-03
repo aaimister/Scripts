@@ -6,12 +6,20 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.util.LinkedList;
+import java.awt.*;
+import javax.imageio.ImageIO;
+import javax.swing.SwingUtilities;
 
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 import org.rsbot.event.events.MessageEvent;
 import org.rsbot.event.listeners.MessageListener;
 import org.rsbot.event.listeners.PaintListener;
 import org.rsbot.script.Script;
 import org.rsbot.script.ScriptManifest;
+import org.rsbot.script.methods.MethodContext;
+import org.rsbot.script.methods.Skills;
 import org.rsbot.script.wrappers.RSNPC;
 import org.rsbot.script.wrappers.RSTile;
 import org.rsbot.script.wrappers.RSTilePath;
@@ -86,6 +94,7 @@ MessageListener {
 	long startTime;
 	Point p;
 	Point p2;
+	Tracker T;
 	int foodArray[] = { 333, 329, 361, 379, 373, 385, 15266 };
 	int SETLOC = 0; // Green East, Green West, Green Chaos, ...
 	int paintState = 0;// 0,1,2
@@ -95,6 +104,21 @@ MessageListener {
 	int boneCount = 0;
 	MyGUI m;
 	String status = "";
+		   private Image getImage(String url) {
+        try {
+            return ImageIO.read(new URL(url));
+        } catch(IOException e) {
+            return null;
+        }
+    }
+
+    private final Color color1 = new Color(255, 255, 255);
+    private final Color color2 = new Color(51, 51, 51);
+
+    private final Font font1 = new Font("Arial", 0, 9);
+    private final Font font2 = new Font("Century", 1, 13);
+
+    private final Image img1 = getImage("http://i.imgur.com/dHosK.png");
 	private final LinkedList<MousePathPoint> mousePath = new LinkedList<MousePathPoint>();
 
 	// Green Drags
@@ -113,7 +137,20 @@ MessageListener {
 		hidep = grandExchange.lookup(HIDE).getGuidePrice();
 		bonep = grandExchange.lookup(BONES).getGuidePrice();
 		m = new MyGUI();
-		m.setVisible(true);
+		T= new Tracker();
+		  if (SwingUtilities.isEventDispatchThread()) {
+	           m.setVisible(true);
+	        } else {
+	            try {
+	                SwingUtilities.invokeAndWait(new Runnable() {
+	                    public void run() {
+	                     m.setVisible(true);
+	                    }
+	                });
+	            } catch (InvocationTargetException ite) {
+	            } catch (InterruptedException ie) {
+	            }
+	        }
 		while (m.isVisible()) {
 			sleep(100);
 		}
@@ -124,12 +161,13 @@ MessageListener {
 		/*
 		 * Green Dragons States
 		 */
-		if (players.getMyPlayer().isInCombat()) {
-			return GState.WAIT;
-		}
 		if (nearArea(E_DRAGL, 15) || nearArea(W_DRAGLOC, 15) || nearArea(TUNNEL_DRAGS,20)) {
+			
 			if (groundItems.getNearest(HIDE, BONES, D_WEED) != null) {
 				return GState.LOOT;
+			}
+			if (players.getMyPlayer().isInCombat()) {
+				return GState.WAIT;
 			}
 			return GState.FIGHT;
 		}
@@ -160,7 +198,7 @@ MessageListener {
 			}
 			return GState.ENTER_RIFT;
 		}
-		if(nearArea(TUNNEL_DOWN, 3)){
+		if(nearArea(TUNNEL_DOWN, 4)){
 			return GState.TO_PORTAL;
 		}
 		if(nearArea(TUNNEL_PORT,3)){
@@ -261,52 +299,13 @@ MessageListener {
 	@Override
 	public void onRepaint(Graphics g) {
 		drawMouse(g);
+		        Graphics2D g1 = (Graphics2D)g;
+		        g1.drawImage(img1, 0, 338, null);
+		        g1.setFont(font2);
+		        g1.setColor(color2);
+		        g1.drawString("Profit: "+(hidep * getHides()) + " - "+ (hidep * PerHour(getHides()))+ " / H", 100, 396) ;
+		        g1.drawString("Exp:"+ T.addAll()+" xp - "+T.allPerHour()+ " / H" , 100, 447);
 
-		((Graphics2D) g).setRenderingHints(rh);
-		g.setColor(new Color(153, 153, 153, 213));
-		g.fillRect(74, 300, 576, 164);
-		g.setColor(new Color(0, 102, 0));
-		g.fillRect(99, 325, 77, 29);
-		g.setColor(new Color(0, 102, 0));
-		g.fillRect(98, 361, 77, 28);
-		g.setColor(new Color(0, 102, 0));
-		g.fillRect(101, 398, 76, 29);
-		g.setColor(new Color(204, 0, 51));
-		g.fillRect(628, 303, 20, 17);
-		g.setColor(new Color(153, 153, 0));
-		g.fillRect(604, 303, 22, 17);
-		g.setColor(new Color(51, 51, 51, 152));
-		g.fillRoundRect(185, 313, 413, 132, 4, 4);
-		g.setFont(new Font("Arial Black", 0, 11));
-		g.setColor(new Color(0, 0, 0, 100));
-		g.drawString("" + line[0], 236, 339);
-		g.setColor(new Color(255, 255, 255));
-		g.drawString("" + line[0], 233, 336);
-		g.setFont(new Font("Arial Black", 0, 11));
-		g.setColor(new Color(0, 0, 0, 100));
-		g.drawString("" + line[1], 235, 361);
-		g.setColor(new Color(255, 255, 255));
-		g.drawString("" + line[1], 232, 358);
-		g.setFont(new Font("Arial Black", 0, 11));
-		g.setColor(new Color(0, 0, 0, 100));
-		g.drawString("" + line[2], 235, 383);
-		g.setColor(new Color(255, 255, 255));
-		g.drawString("" + line[2], 232, 380);
-		g.setFont(new Font("Arial Black", 0, 11));
-		g.setColor(new Color(0, 0, 0, 100));
-		g.drawString("" + line[3], 236, 404);
-		g.setColor(new Color(255, 255, 255));
-		g.drawString("" + line[3], 233, 401);
-		g.setFont(new Font("Arial Black", 0, 11));
-		g.setColor(new Color(0, 0, 0, 100));
-		g.drawString("" + line[4], 237, 423);
-		g.setColor(new Color(255, 255, 255));
-		g.drawString("" + line[4], 234, 420);
-		g.setFont(new Font("Arial Black", 0, 11));
-		g.setColor(new Color(0, 0, 0, 100));
-		g.drawString("Status: " + status, 307, 312);
-		g.setColor(new Color(255, 255, 255));
-		g.drawString("Status: " + status, 304, 309);
 	}
 
 	public void attackNearestDragon() {
@@ -342,21 +341,6 @@ MessageListener {
 	public int loop() {
 		//Paint
 		status = getState().toString().toLowerCase();
-		switch (paintState) {
-		case 0:
-			line[0] = "ActiveDrags - Profit";
-			line[1] = "Hides: " + getHides() + " - " + (hidep * getHides());
-			line[2] = "Hides/h: " + PerHour(getHides()) + " - "
-			+ (hidep * PerHour(getHides()));
-			line[3] = "Bones: " + getBones() + " - " + (bonep * getBones());
-			line[4] = "Bones/h: " + PerHour(getBones()) + " - "
-			+ (bonep * PerHour(getBones()));
-			break;
-		case 1:
-			break;
-		case 2:
-			break;
-		}
 
 		switch (getState()) {
 		/*
@@ -3317,6 +3301,108 @@ MessageListener {
 		private javax.swing.JTabbedPane jTabbedPane1;
 		private javax.swing.JTextPane jTextPane1;
 		// End of variables declaration
+	}
+	/**
+	 * Created by IntelliJ IDEA. User: Tim Date: 9/8/11 Time: 5:05 PM To change this
+	 * template use File | Settings | File Templates.
+	 */
+	public class Tracker {
+		long start;
+		public int length = 40;
+		int bSkills[] = new int[7];// attack,str,def,range,mage,hp,prayer
+		int cSkills[] = new int[7];// attack,str,def,range,mage,hp,prayer
+		MethodContext m;
+		String skillNames[] = { "Attack", "Strength", "Defense", "Range", "Magic",
+				"Consitution", "Prayer" };
+
+		/**
+		 * @param methodGather
+		 *            Obtains all information to be tracked
+		 */
+		public Tracker() {
+			start = System.currentTimeMillis();
+			m = ctx;
+			bSkills[0] = m.skills.getCurrentExp(Skills.ATTACK);
+			bSkills[1] = m.skills.getCurrentExp(Skills.STRENGTH);
+			bSkills[2] = m.skills.getCurrentExp(Skills.DEFENSE);
+			bSkills[3] = m.skills.getCurrentExp(Skills.RANGE);
+			bSkills[4] = m.skills.getCurrentExp(Skills.MAGIC);
+			bSkills[5] = m.skills.getCurrentExp(Skills.CONSTITUTION);
+			bSkills[6] = m.skills.getCurrentExp(Skills.PRAYER);
+		}
+
+		/**
+		 * Updates skill exp
+		 */
+		void updateSkills() {
+			cSkills[0] = m.skills.getCurrentExp(Skills.ATTACK);
+			cSkills[1] = m.skills.getCurrentExp(Skills.STRENGTH);
+			cSkills[2] = m.skills.getCurrentExp(Skills.DEFENSE);
+			cSkills[3] = m.skills.getCurrentExp(Skills.RANGE);
+			cSkills[4] = m.skills.getCurrentExp(Skills.MAGIC);
+			cSkills[5] = m.skills.getCurrentExp(Skills.CONSTITUTION);
+			cSkills[6] = m.skills.getCurrentExp(Skills.PRAYER);
+		}
+
+		/**
+		 * Draws all possible xp gains
+		 * 
+		 * @param g
+		 * @return g
+		 */
+		public Graphics drawAnyIfChanged(Graphics g, int xl, int yl) {
+			int a = 1;
+			for (int i = 0; i < skillNames.length; i++) {
+				if (skillChanged(i)) {
+					a++;
+					g.setColor(Color.WHITE);
+					g.drawString(skillNames[i] + " exp gained: "
+							+ (cSkills[i] - bSkills[i]), xl, yl + (a * 30));
+					g.drawString(
+							skillNames[i]
+									+ " exp/h: "
+									+ (PerHour(				
+											cSkills[i] - bSkills[i])), xl, yl
+									+ (a * 30)+15);
+				}
+
+			}
+			length = (a) * 35;
+			return g;
+		}
+public int addAll(){
+	int all = 0;
+	for (int i = 0; i < skillNames.length; i++) {
+		if (skillChanged(i)) {
+			all+= cSkills[i] - bSkills[i];
+		}
+		}
+	return all;
+	
+}
+public int allPerHour(){
+	return PerHour(addAll());
+}
+		boolean skillChanged(int skill) {
+			return cSkills[skill] > bSkills[skill];
+		}
+
+		/**
+		 * 
+		 * @return if skills have been changed
+		 */
+		boolean skillsChanged() {
+			updateSkills();
+			for (int i : bSkills) {
+				for (int j : cSkills) {
+					if (j > i) {
+						return true;
+					}
+				}
+			}
+			return false;
+
+		}
 	}
 
 	@SuppressWarnings("serial")
