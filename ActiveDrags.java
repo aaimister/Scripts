@@ -7,9 +7,6 @@ import java.awt.Point;
 import java.awt.RenderingHints;
 import java.util.LinkedList;
 
-import javax.swing.JOptionPane;
-
-import org.Constants.MISC;
 import org.rsbot.event.events.MessageEvent;
 import org.rsbot.event.listeners.MessageListener;
 import org.rsbot.event.listeners.PaintListener;
@@ -20,7 +17,7 @@ import org.rsbot.script.wrappers.RSTile;
 import org.rsbot.script.wrappers.RSTilePath;
 import org.rsbot.script.wrappers.RSWeb;
 
-@ScriptManifest(authors = { "Swipe" }, keywords = "Combat, loot", name = "ActiveDrags", version = 1.01, description = "Kills Green Drags EAST varrock teletab")
+@ScriptManifest(authors = { "Swipe" }, keywords = "Combat, loot", name = "ActiveDrags", version = 1.02, description = "AIO Dragon Killer")
 public class ActiveDrags extends Script implements PaintListener,
 MessageListener {
 	final static int HIDE = 1753;
@@ -39,6 +36,7 @@ MessageListener {
 	public final static RSTile W_FALALOC = new RSTile(2965, 3377);
 	public final static RSTile W_DRAGLOC = new RSTile(2978, 3616);
 	public static final RSTile[] W_DITCHPATH = { new RSTile(2944, 3369),
+		
 		new RSTile(2945, 3376), new RSTile(2949, 3379),
 		new RSTile(2953, 3382), new RSTile(2958, 3382),
 		new RSTile(2963, 3384), new RSTile(2964, 3389),
@@ -69,6 +67,17 @@ MessageListener {
 		new RSTile(2982, 3601), new RSTile(2981, 3606),
 		new RSTile(2979, 3611), new RSTile(2977, 3616) };
 	//
+	//Tunnels
+	public final static RSTile TUNNEL_LOC = new RSTile(3164, 3559);
+	public final static int RIFTID = 28892;
+	public final static Point PROCEED = new Point(265,170);
+	public final static RSTile TUNNEL_PORT = new RSTile(3290, 5464);
+	public final static int PORTAL =28779;
+	public final static RSTile DRAG_PORTAL = new RSTile(3302,5469);
+	public final static RSTile TUNNEL_DRAGS = new RSTile(3309, 5452);
+	public final static RSTile TUNNEL_DOWN = new RSTile(3293, 3479);
+	
+	//
 	public final static int[] dragons = { 4679, 4680, 941 };
 	private static final Color MOUSE_COLOR = new Color(139, 69, 19),
 	MOUSE_BORDER_COLOR = new Color(0, 153, 0),
@@ -89,8 +98,9 @@ MessageListener {
 	private final LinkedList<MousePathPoint> mousePath = new LinkedList<MousePathPoint>();
 
 	// Green Drags
-	static enum State {
-		E_DITCH, W_DITCH, FIGHT, TO_WDRAGS, TO_EDRAGS, BANK, TO_WBANK, TO_EBANK, TO_WDITCH, TO_EDITCH, TELE, EAT, WAIT, LOOT
+	static enum GState {
+		E_DITCH, W_DITCH, FIGHT, TO_WDRAGS, TO_EDRAGS, TO_TUNNEL_DRAG, TO_RIFT, ENTER_RIFT, CLICK_WARN,
+		TO_PORTAL, CLICK_PORTAL, BANK, TO_WBANK, TO_EBANK, TO_WDITCH, TO_EDITCH, TELE, EAT, WAIT, LOOT
 	}
 
 	private int food = 333;
@@ -110,63 +120,81 @@ MessageListener {
 		return true;
 	}
 
-	public State getState() {
+	public GState getState() {
 		/*
 		 * Green Dragons States
 		 */
 		if (players.getMyPlayer().isInCombat()) {
-			return State.WAIT;
+			return GState.WAIT;
 		}
-		if (nearArea(E_DRAGL, 15) || nearArea(W_DRAGLOC, 15)) {
+		if (nearArea(E_DRAGL, 15) || nearArea(W_DRAGLOC, 15) || nearArea(TUNNEL_DRAGS,20)) {
 			if (groundItems.getNearest(HIDE, BONES, D_WEED) != null) {
-				return State.LOOT;
+				return GState.LOOT;
 			}
-			return State.FIGHT;
+			return GState.FIGHT;
 		}
 
 		if (nearArea(VARROCK, 8)) {
-			return State.TO_EBANK;
+			return GState.TO_EBANK;
 		}
 		if (nearArea(W_FALALOC, 8)) {
-			return State.TO_WBANK;
+			return GState.TO_WBANK;
 		}
 		if (nearArea(E_BANKL, 10)) {
 			if (inventory.contains(BONES)) {
-				return State.BANK;
+				return GState.BANK;
 			} else {
-				return State.TO_EDITCH;
+				return GState.TO_EDITCH;
 			}
 		}
 		if (nearArea(W_BANKLOC, 10)) {
 			if (inventory.contains(BONES)) {
-				return State.BANK;
+				return GState.BANK;
 			} else {
-				return State.TO_WDITCH;
+				return GState.TO_WDITCH;
 			}
+		}
+		if(nearArea(TUNNEL_LOC,7)){
+			if(interfaces.getAllContaining("Warning").length >0){
+				return GState.CLICK_WARN;
+			}
+			return GState.ENTER_RIFT;
+		}
+		if(nearArea(TUNNEL_DOWN, 3)){
+			return GState.TO_PORTAL;
+		}
+		if(nearArea(TUNNEL_PORT,3)){
+			return GState.CLICK_PORTAL;
+		}
+		if(nearArea(DRAG_PORTAL, 3)){
+			return GState.TO_TUNNEL_DRAG;
 		}
 		if (inventory.getCount(food) < 1
 				|| (inventory.getCount(HIDE) + inventory.getCount(BONES)) > 26) {
-			return State.TELE;
+			return GState.TELE;
 		}
 
 		if (nearArea(E_DITCHL, 5)) {
 			if (getMyPlayer().getLocation().getY() < E_DITCHL.getY()) {
-				return State.E_DITCH;
+				return GState.E_DITCH;
 			} else {
-				return State.TO_EDRAGS;
+				if(SETLOC==2){
+					return GState.TO_RIFT;
+				}
+				return GState.TO_EDRAGS;
 			}
 		}
 		if (nearArea(W_DITCHLOC, 5)) {
 			if (getMyPlayer().getLocation().getY() < W_DITCHLOC.getY()) {
-				return State.W_DITCH;
+				return GState.W_DITCH;
 			} else {
-				return State.TO_WDRAGS;
+				return GState.TO_WDRAGS;
 			}
 		}
 		/*
 		 * End Green Drag States
 		 */
-		return State.WAIT;
+		return GState.WAIT;
 	}
 
 	public int getHides() {
@@ -337,9 +365,13 @@ MessageListener {
 		case BANK:
 			if (bank.isOpen()) {
 				bank.depositAll();
-				bank.withdraw(food, amount);
+				if(!(inventory.getCount(food) != amount)){
+				bank.withdraw(food, amount-inventory.getCount(food));
+				}
 				sleep(500);
+				if(!inventory.contains(getTabForLoc())){
 				bank.withdraw(getTabForLoc(), 1);
+				}
 				bank.close();
 			} else {
 				bank.open();
@@ -358,6 +390,26 @@ MessageListener {
 			while (ctx.calc.distanceTo(W_DITCHLOC) > 5) {
 				myPath.traverse();
 				ctx.env.sleep(500);
+			}
+			break;
+		case TO_RIFT:
+			walkTo(TUNNEL_LOC);
+			break;
+		case ENTER_RIFT:
+			objects.getNearest(RIFTID).getModel().doClick(true);
+			sleep(500);
+			break;
+		case CLICK_WARN:
+			mouse.click(PROCEED,true);
+			sleep(500);
+			break;
+		case TO_PORTAL:
+			walkTo(TUNNEL_PORT);
+			break;
+		case CLICK_PORTAL:
+			while(!nearArea(DRAG_PORTAL,2)){
+			objects.getNearest(PORTAL).getModel().doClick(true);
+			sleep(500);
 			}
 			break;
 		case E_DITCH:
@@ -382,11 +434,14 @@ MessageListener {
 			walkTo(E_DRAGL);
 			break;
 		case TO_WDRAGS:
-			RSTilePath MyPath = walking.newTilePath(W_DRAGPATH);
+			RSTilePath aPath = walking.newTilePath(W_DRAGPATH);
 			while(calc.distanceTo(W_DRAGLOC) < 10){
-				myPath.traverse();
+				aPath.traverse();
 				ctx.env.sleep(500);
 			}
+			break;
+		case TO_TUNNEL_DRAG:
+			walkTo(TUNNEL_DRAGS);
 			break;
 		case FIGHT:
 			attackNearestDragon();
