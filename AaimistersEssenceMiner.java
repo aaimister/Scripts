@@ -1,6 +1,6 @@
 /**
  * @author Aaimister
- * @version 1.43 ©2010-2011 Aaimister, No one except Aaimister has the right to
+ * @version 1.44 ©2010-2011 Aaimister, No one except Aaimister has the right to
  *          modify and/or spread this script without the permission of Aaimister.
  *          I'm not held responsible for any damage that may occur to your
  *          property.
@@ -55,7 +55,7 @@ import org.rsbot.script.ScriptManifest;
 import org.rsbot.script.util.Filter;
 import org.rsbot.script.wrappers.*;
 
-@ScriptManifest(authors = { "Aaimister" }, website = "http://fc4ea3b7.any.gs", name = "Aaimisters Essence Miner v1.43", keywords = "Mining", version = 1.43, description = ("Mines Essence."))
+@ScriptManifest(authors = { "Aaimister" }, website = "http://fc4ea3b7.any.gs", name = "Aaimisters Essence Miner v1.44", keywords = "Mining", version = 1.44, description = ("Mines Essence."))
 public class AaimistersEssenceMiner extends Script implements PaintListener, MessageListener, MouseListener {
 
 	private static interface AM {
@@ -227,18 +227,19 @@ public class AaimistersEssenceMiner extends Script implements PaintListener, Mes
 						return State.PORTAL;
 					}
 				} catch (Exception e) {
-					
+
 				}
 				return State.MINE;
-			} else {
+			} else if (good()) {
 				return State.TOMINE;
+			} else {
+				return State.ERROR;
 			}
 		}
-		//return State.ERROR;
 	}
 
 	public double getVersion() { 
-		return 1.43;
+		return 1.44;
 	}
 
 	public boolean onStart() {
@@ -392,6 +393,13 @@ public class AaimistersEssenceMiner extends Script implements PaintListener, Mes
 		logTime = true;
 	}
 
+	private boolean good() {
+		if (!game.isLoggedIn() || game.isLoading() || game.isLoginScreen() || game.isWelcomeScreen()) {
+			return false;
+		}
+		return true;
+	}
+	
 	private boolean breakingCheck(){
 		if (nextBreak <= System.currentTimeMillis()){
 			return true;
@@ -609,63 +617,53 @@ public class AaimistersEssenceMiner extends Script implements PaintListener, Mes
 			return 10;
 		}
 
-		if (!game.isLoggedIn()) {
+		if (!good()) {
 			status = "Logging In / Breaking";
 			return 3000;
-		} else {
-			if (startTime == 0 && skills.getCurrentLevel(14) != 0) {
-				startTime = System.currentTimeMillis();
-				startEXP = skills.getCurrentExp(14);
-				currentXP = skills.getExpToNextLevel(14);
+		}
+		
+		if (startTime == 0 && skills.getCurrentLevel(14) != 0) {
+			startTime = System.currentTimeMillis();
+			startEXP = skills.getCurrentExp(14);
+			currentXP = skills.getExpToNextLevel(14);
+		}
+
+		if (logTime) {
+			log("Next Break In: " + formatTime((int) nextBreakT) + " For: " + formatTime((int) nextLength) + ".");
+			logTime = false;
+		}
+
+		mouse.setSpeed(random(4, 9));
+		setCamera();
+		setRun();
+
+		if (resting) {
+			status = "Resting";
+			random = random(0, 7);
+			if (antiBanTime <= System.currentTimeMillis()) {
+				check = false;
+				doAntiBan();
 			}
-
-			if (logTime) {
-				log("Next Break In: " + formatTime((int) nextBreakT) + " For: " + formatTime((int) nextLength) + ".");
-				logTime = false;
+			if (getMyPlayer().getAnimation() == -1 && !mining) {
+				doRest();
+				sleep(200, 800);
 			}
+			return random(250, 450);
+		}
 
-			mouse.setSpeed(random(4, 9));
-			setCamera();
-			setRun();
-
-			if (resting) {
-				status = "Resting";
-				random = random(0, 7);
-				if (antiBanTime <= System.currentTimeMillis()) {
-					check = false;
-					doAntiBan();
-				}
-				if (getMyPlayer().getAnimation() == -1 && !mining) {
-					doRest();
-					sleep(200, 800);
-				}
-				return random(250, 450);
-			}
-
-			switch (getState()) {
-			case TOBANK:
-				clickedPortal = false;
-				status = "Walking to bank";
-				try {
-					if (!Bank.contains(getLocation())) {
-						if (AtPerson.contains(getLocation())) {
-							if (checkDoor() || (calc.distanceTo(GateT) > 3 && !varrock)) {
-								openDoor();
-								return random(300, 500);
-							} else {
-								if (walkTo(BankT.randomize(2, 2))) {
-									
-								} else {
-									if (!getMyPlayer().isMoving() || calc.distanceTo(walking.getDestination()) <= 4) {
-										walking.walkTileMM(walking.getClosestTileOnMap(BankT.randomize(2, 2)));
-									}
-								}
-								//walking.newTilePath(toBank).randomize(2, 2).traverse();
-								return random(300, 600);
-							}
+		switch (getState()) {
+		case TOBANK:
+			clickedPortal = false;
+			status = "Walking to bank";
+			try {
+				if (!Bank.contains(getLocation())) {
+					if (AtPerson.contains(getLocation())) {
+						if (checkDoor() || (calc.distanceTo(GateT) > 3 && !varrock)) {
+							openDoor();
+							return random(300, 500);
 						} else {
 							if (walkTo(BankT.randomize(2, 2))) {
-								
+
 							} else {
 								if (!getMyPlayer().isMoving() || calc.distanceTo(walking.getDestination()) <= 4) {
 									walking.walkTileMM(walking.getClosestTileOnMap(BankT.randomize(2, 2)));
@@ -674,99 +672,98 @@ public class AaimistersEssenceMiner extends Script implements PaintListener, Mes
 							//walking.newTilePath(toBank).randomize(2, 2).traverse();
 							return random(300, 600);
 						}
-					}
-				} catch (Exception e) {
-					idle++;
-				}
+					} else {
+						if (walkTo(BankT.randomize(2, 2))) {
 
-				break;
-			case MINE:
-				clickedPer = false;
-				if (idle > 10) {
-					mining = false;
-					idle = 0;
+						} else {
+							if (!getMyPlayer().isMoving() || calc.distanceTo(walking.getDestination()) <= 4) {
+								walking.walkTileMM(walking.getClosestTileOnMap(BankT.randomize(2, 2)));
+							}
+						}
+						//walking.newTilePath(toBank).randomize(2, 2).traverse();
+						return random(300, 600);
+					}
 				}
-				try {
-					if (objects.getNearest(obs) != null) {
-						RSObject ess = objects.getNearest(essenceID());
-						if (ess != null) {
-							RSTile loc = ess.getArea().getNearestTile(getLocation());
-							if (!ess.isOnScreen()) {
-								idle++;
-								if (calc.distanceTo(loc) > 3 && !mining) {
-									status = "Walking to essence";
-									if (!getMyPlayer().isMoving() || calc.distanceTo(walking.getDestination()) < 4) {
-										walking.walkTileMM(walking.getClosestTileOnMap(loc.randomize(2, 2)));
-										return random(150, 300);
-									}
-								} else if (!mining) {
-									camera.turnTo(ess);
-									return random(300, 500);
+			} catch (Exception e) {
+				idle++;
+			}
+
+			break;
+		case MINE:
+			clickedPer = false;
+			if (idle > 10) {
+				mining = false;
+				idle = 0;
+			}
+			try {
+				if (objects.getNearest(obs) != null) {
+					RSObject ess = objects.getNearest(essenceID());
+					if (ess != null) {
+						RSTile loc = ess.getArea().getNearestTile(getLocation());
+						if (!ess.isOnScreen()) {
+							idle++;
+							if (calc.distanceTo(loc) > 3 && !mining) {
+								status = "Walking to essence";
+								if (!getMyPlayer().isMoving() || calc.distanceTo(walking.getDestination()) < 4) {
+									walking.walkTileMM(walking.getClosestTileOnMap(loc.randomize(2, 2)));
+									return random(150, 300);
 								}
-							} else {
-								idle++;
-								if (calc.distanceTo(loc) > 3) {
-									if (!getMyPlayer().isMoving() || calc.distanceTo(walking.getDestination()) < 4) {
-										walking.walkTileMM(walking.getClosestTileOnMap(loc.randomize(2, 2)));
-										return random(150, 300);
-									}
-								} else if (!mining) {
-									status = "Mining";
-									ess.interact("Mine");
-									mining = true;
-									idle = 0;
-									return random(2000, 2700);
+							} else if (!mining) {
+								camera.turnTo(ess);
+								return random(300, 500);
+							}
+						} else {
+							idle++;
+							if (calc.distanceTo(loc) > 3) {
+								if (!getMyPlayer().isMoving() || calc.distanceTo(walking.getDestination()) < 4) {
+									walking.walkTileMM(walking.getClosestTileOnMap(loc.randomize(2, 2)));
+									return random(150, 300);
 								}
+							} else if (!mining) {
+								status = "Mining";
+								ess.interact("Mine");
+								mining = true;
+								idle = 0;
+								return random(2000, 2700);
 							}
 						}
 					}
-					if (getMyPlayer().getAnimation() != -1) {
-						idle = 0;
-					}
-				} catch (Exception e) {
-					idle++;
 				}
+				if (getMyPlayer().getAnimation() != -1) {
+					idle = 0;
+				}
+			} catch (Exception e) {
+				idle++;
+			}
 
-				break;
-			case TOMINE:
-				bankedOpen = false;
-				mining = false;
-				notChosen = true;
-				opened = false;
-				if (varrock) {
-					status = "Walking to Aubury";
-				} else {
-					status = "Walking to Wizard";
-				}
-				try {
-					if (!AtPerson.contains(getLocation())) {
-						if (calc.distanceTo(PersonT) <= 6) {
-							if (checkDoor()) {
-								RSObject closed = objects.getNearest(door);
-								if (calc.distanceTo(closed.getLocation()) > 3) {
-									walking.walkTileMM(walking.getClosestTileOnMap(closed.getLocation().randomize(1, 1)));
-									return random(1500, 1800);
-								} else {
-									openDoor();
-								}
-								return random(300, 500);
+			break;
+		case TOMINE:
+			bankedOpen = false;
+			mining = false;
+			notChosen = true;
+			opened = false;
+			if (varrock) {
+				status = "Walking to Aubury";
+			} else {
+				status = "Walking to Wizard";
+			}
+			try {
+				if (!AtPerson.contains(getLocation())) {
+					if (calc.distanceTo(PersonT) <= 6) {
+						if (checkDoor()) {
+							RSObject closed = objects.getNearest(door);
+							if (calc.distanceTo(closed.getLocation()) > 3) {
+								walking.walkTileMM(walking.getClosestTileOnMap(closed.getLocation().randomize(1, 1)));
+								return random(1500, 1800);
 							} else {
-								//walkTo(PersonT.randomize(2, 2));
-								//walking.newTilePath(toMine).randomize(2, 2).traverse();
-								if (walkTo(toMine)) {
-									
-								} else {
-									if (!getMyPlayer().isMoving() || calc.distanceTo(walking.getDestination()) <= 4) {
-										walking.walkTileMM(walking.getClosestTileOnMap(toMine));
-									}
-								}
-								return random(300, 600);
+								openDoor();
 							}
+							return random(300, 500);
 						} else {
 							//walkTo(PersonT.randomize(2, 2));
 							//walking.newTilePath(toMine).randomize(2, 2).traverse();
 							if (walkTo(toMine)) {
-								
+
 							} else {
 								if (!getMyPlayer().isMoving() || calc.distanceTo(walking.getDestination()) <= 4) {
 									walking.walkTileMM(walking.getClosestTileOnMap(toMine));
@@ -774,141 +771,154 @@ public class AaimistersEssenceMiner extends Script implements PaintListener, Mes
 							}
 							return random(300, 600);
 						}
-					}
-				} catch (Exception e) {
-					idle++;
-				}
+					} else {
+						//walkTo(PersonT.randomize(2, 2));
+						//walking.newTilePath(toMine).randomize(2, 2).traverse();
+						if (walkTo(toMine)) {
 
-				break;
-			case TELE:
-				try {
-					if (idle > 15) {
-						if (objects.getNearest(obs) == null) {
-							RSNPC per = perNPC();
-							if (interfaces.getComponent(620, 18).isValid()) {
-								close();
-							}
-							if (per != null) {
-								per.interact("Teleport");
-								sleep(2000, 3000);
-							} else {
-								RSNPC plant = plantNPC();
-								plant.interact("Teleport");
-								sleep(2000, 3000);
-							}
 						} else {
-							return 10;
-						}
-						idle = 0;
-					}
-					if (interfaces.getComponent(620, 18).isValid()) {
-						close();
-						sleep(300);
-						clickedPer = false;
-						return 350;
-					}
-					if (!clickedPer) {
-						RSNPC per = perNPC();
-						if (per != null) {
-							idle++;
-							if (!clickedPer) {
-								per.interact("Teleport");
-								clickedPer = true;
-							} else {
-								waitForObj();
+							if (!getMyPlayer().isMoving() || calc.distanceTo(walking.getDestination()) <= 4) {
+								walking.walkTileMM(walking.getClosestTileOnMap(toMine));
 							}
+						}
+						return random(300, 600);
+					}
+				}
+			} catch (Exception e) {
+				idle++;
+			}
+
+			break;
+		case TELE:
+			try {
+				if (idle > 15) {
+					if (objects.getNearest(obs) == null) {
+						RSNPC per = perNPC();
+						if (interfaces.getComponent(620, 18).isValid()) {
+							close();
+						}
+						if (per != null) {
+							per.interact("Teleport");
+							sleep(2000, 3000);
 						} else {
 							RSNPC plant = plantNPC();
-							idle++;
-							if (!clickedPer) {
-								plant.interact("Teleport");
-								clickedPer = true;
-							} else {
-								waitForObj();
-							}
+							plant.interact("Teleport");
+							sleep(2000, 3000);
 						}
 					} else {
-						idle++;
-						waitForObj();
+						return 10;
 					}
-				} catch (Exception e) {
-					idle++;
-				}
-
-				break;
-			case PORTAL:
-				status = "Walking to bank";
-				if (idle > 7) {
-					clickedPortal = false;
 					idle = 0;
 				}
-				try {
-					if (!clickedPortal) {
-						if (portal() != null) {
-							RSObject p = objects.getNearest(39831);
-							RSTile loc = p.getArea().getNearestTile(getLocation());
-							if (!portal().isOnScreen()) {
-								if (calc.distanceTo(loc) > 3) {
-									walking.walkTileMM(walking.getClosestTileOnMap(loc.randomize(2, 2)));
-									return random(1200, 1500);
-								} else {
-									idle++;
-									if (calc.distanceTo(loc) > 3) {
-										if (!getMyPlayer().isMoving() || calc.distanceTo(walking.getDestination()) < 4) {
-											walking.walkTileMM(walking.getClosestTileOnMap(loc.randomize(2, 2)));
-											return random(150, 300);
-										}
-									} else if (!clickedPortal) {
-										portal().interact("Enter");
-										clickedPortal = true;
-										idle = 0;
-										return random(200, 500);
-									}
-								}
+				if (interfaces.getComponent(620, 18).isValid()) {
+					close();
+					sleep(300);
+					clickedPer = false;
+					return 350;
+				}
+				if (!clickedPer) {
+					RSNPC per = perNPC();
+					if (per != null) {
+						idle++;
+						if (!clickedPer) {
+							per.interact("Teleport");
+							clickedPer = true;
+						} else {
+							waitForObj();
+						}
+					} else {
+						RSNPC plant = plantNPC();
+						idle++;
+						if (!clickedPer) {
+							plant.interact("Teleport");
+							clickedPer = true;
+						} else {
+							waitForObj();
+						}
+					}
+				} else {
+					idle++;
+					waitForObj();
+				}
+			} catch (Exception e) {
+				idle++;
+			}
+
+			break;
+		case PORTAL:
+			status = "Walking to bank";
+			if (idle > 7) {
+				clickedPortal = false;
+				idle = 0;
+			}
+			try {
+				if (!clickedPortal) {
+					if (portal() != null) {
+						RSObject p = objects.getNearest(39831);
+						RSTile loc = p.getArea().getNearestTile(getLocation());
+						if (!portal().isOnScreen()) {
+							if (calc.distanceTo(loc) > 3) {
+								walking.walkTileMM(walking.getClosestTileOnMap(loc.randomize(2, 2)));
+								return random(1200, 1500);
 							} else {
 								idle++;
-								if (calc.distanceTo(loc) > 2) {
+								if (calc.distanceTo(loc) > 3) {
 									if (!getMyPlayer().isMoving() || calc.distanceTo(walking.getDestination()) < 4) {
 										walking.walkTileMM(walking.getClosestTileOnMap(loc.randomize(2, 2)));
 										return random(150, 300);
 									}
-								}
-								if (!clickedPortal) {
+								} else if (!clickedPortal) {
 									portal().interact("Enter");
 									clickedPortal = true;
 									idle = 0;
-									waitForArea(CityArea);
+									return random(200, 500);
 								}
 							}
+						} else {
+							idle++;
+							if (calc.distanceTo(loc) > 2) {
+								if (!getMyPlayer().isMoving() || calc.distanceTo(walking.getDestination()) < 4) {
+									walking.walkTileMM(walking.getClosestTileOnMap(loc.randomize(2, 2)));
+									return random(150, 300);
+								}
+							}
+							if (!clickedPortal) {
+								portal().interact("Enter");
+								clickedPortal = true;
+								idle = 0;
+								waitForArea(CityArea);
+							}
 						}
-					} else {
-						idle++;
-						waitForArea(CityArea);
 					}
-				} catch (Exception e) {
+				} else {
 					idle++;
+					waitForArea(CityArea);
 				}
+			} catch (Exception e) {
+				idle++;
+			}
 
-				break;
-			case BANK:
-				status = "Banking";
-				if (idle > 7) {
-					opened = false;
-					notChosen = true;
-					bankedOpen = false;
-					idle = 0;
+			break;
+		case BANK:
+			status = "Banking";
+			if (idle > 7) {
+				opened = false;
+				notChosen = true;
+				bankedOpen = false;
+				idle = 0;
+			}
+			if (notChosen) {
+				if (random(0, 5) == 0 || random(0, 5) == 2) {
+					useBooth = false;
+				} else {
+					useBooth = true;
 				}
-				if (notChosen) {
-					if (random(0, 5) == 0 || random(0, 5) == 2) {
-						useBooth = false;
-					} else {
-						useBooth = true;
-					}
-					notChosen = false;
-				}
-				RSObject booth = objects.getNearest(bankID);
-				RSNPC bankP = banker();
-				try {
+				notChosen = false;
+			}
+			RSObject booth = objects.getNearest(bankID);
+			RSNPC bankP = banker();
+			try {
+				if (Bank.contains(getLocation())) {
 					if (inventory.isFull()) {
 						if (!bank.isOpen()) {
 							if (!booth.isOnScreen()) {
@@ -952,22 +962,15 @@ public class AaimistersEssenceMiner extends Script implements PaintListener, Mes
 							}
 						}
 					}
-				} catch (Exception e) {
-					idle++;
 				}
-
-				break;
-			case ERROR:
+			} catch (Exception e) {
 				idle++;
-				if (idle > 50) {
-					log("Huston, we have a problem.");
-					game.logout(false);
-					sleep(1000, 1500);
-					stopScript();
-				}
-
-				break;
 			}
+
+			break;
+		case ERROR:
+
+			break;
 		}
 		return random(300, 600);
 	}
@@ -1196,7 +1199,7 @@ public class AaimistersEssenceMiner extends Script implements PaintListener, Mes
 			}
 		});
 	}
-	
+
 	private RSNPC plantNPC() {
 		RSNPC interacting = interactingNPC();
 		return interacting != null ? interacting : npcs.getNearest(new Filter<RSNPC>() {
@@ -2094,6 +2097,8 @@ public class AaimistersEssenceMiner extends Script implements PaintListener, Mes
 							minTimeBeBox.setEnabled(true);
 							maxBreakBox.setEnabled(true);
 							minBreakBox.setEnabled(true);
+						} else {
+							randomBox.setSelected(true);
 						}
 					}
 					if (opts[1].equals("true")) {
