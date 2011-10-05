@@ -1091,7 +1091,7 @@ public class AaimistersRoaches  extends Script implements PaintListener, MouseLi
 						return random(100, 156);
 					}
 					if (!bankedOpen && bank.isOpen()) {
-						if (inventory.getCount() > 0) {
+						if (inventory.getCount() - pot > 0) {
 							bank.depositAll();
 							sleep(350, 500);
 						}
