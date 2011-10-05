@@ -1,6 +1,6 @@
 /**
  * @author Aaimister
- * @version 1.31 ©2010-2011 Aaimister, No one except Aaimister has the right to
+ * @version 1.32 ©2010-2011 Aaimister, No one except Aaimister has the right to
  *          modify and/or spread this script without the permission of Aaimister.
  *          I'm not held responsible for any damage that may occur to your
  *          property.
@@ -62,7 +62,7 @@ import org.rsbot.script.wrappers.RSNPC;
 import org.rsbot.script.wrappers.RSPlayer;
 import org.rsbot.script.wrappers.RSTile;
 
-@ScriptManifest(authors = { "Aaimister" }, website = "http://922d1ef9.any.gs", name = "Aaimisters Chicken Killer v1.31", keywords = "Combat", version = 1.31, description = ("Kills chickens."))
+@ScriptManifest(authors = { "Aaimister" }, website = "http://922d1ef9.any.gs", name = "Aaimisters Chicken Killer v1.32", keywords = "Combat", version = 1.32, description = ("Kills chickens."))
 public class AaimistersChickenKiller extends Script implements MessageListener, PaintListener, MouseListener {
 
 	private RSTile InPen;
@@ -253,7 +253,7 @@ public class AaimistersChickenKiller extends Script implements MessageListener, 
 	}
 
 	public double getVersion() { 
-		return 1.31;
+		return 1.32;
 	}
 	
 	@Override
@@ -523,7 +523,7 @@ public class AaimistersChickenKiller extends Script implements MessageListener, 
 		}
 		mouse.click(false);
 		sleep(100, 200);
-		menu.doAction("Bury");
+		menu.click("Bury");
 		sleep(25, 50);
 	}
 
