@@ -349,7 +349,7 @@ public class ProConstruction extends Script implements PaintListener {
 		// ---- Removing the Object ----
 		if (objects.getNearest(WhattoBuild) != null
 				&& !interfaces.get(228).isValid()) {
-			objects.getNearest(WhattoBuild).doAction("Remove");
+			objects.getNearest(WhattoBuild).interact("Remove");
 			sleep(random(1000, 2000));
 		}
 		// ---- Remove Interface ----
@@ -378,7 +378,7 @@ public class ProConstruction extends Script implements PaintListener {
 		// ---- Building the Object Choosen ----
 		if (objects.getNearest(WhattoBuild) == null
 				&& inventory.getCount(Plank) > Number) {
-			objects.getNearest(WhattoBuild2).doAction("Build");
+			objects.getNearest(WhattoBuild2).interact("Build");
 			sleep(random(1000, 2000));
 		}
 		if (inventory.getCount(Plank) < Number2
@@ -388,7 +388,7 @@ public class ProConstruction extends Script implements PaintListener {
 		// ---- Telling Butler to Fetch from Bank ----
 		if (npcs.getNearest(Butler) != null && !interfaces.get(394).isValid()
 				&& inventory.getCount(Plank) < Number2) {
-			npcs.getNearest(Butler).doAction("Fetch-from-bank");
+			npcs.getNearest(Butler).interact("Fetch-from-bank");
 			sleep(random(1000, 2000));
 		}
 		if (TypeofServent.equals("Normal Butler")) {
@@ -409,7 +409,7 @@ public class ProConstruction extends Script implements PaintListener {
 		}
 		if (TypeofObject.equals("Oak Dungeon Door")) {
 			if (objects.getNearest(13351) != null) {
-				objects.getNearest(13351).doAction("Close");
+				objects.getNearest(13351).interact("Close");
 			}
 		}
 		return true;

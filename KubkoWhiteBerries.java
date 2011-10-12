@@ -252,14 +252,14 @@ public class KubkoWhiteBerries extends Script implements PaintListener,
 		final RSObject station2 = objects.getNearest(12166);
 		if (station2 != null && station2.isOnScreen()) {
 			camera.turnTo(station2);
-			station2.doAction("Chop-down");
+			station2.interact("Chop-down");
 			log("trying to chopdown");
 		}
 	}
 
 	void canoeDestination() {
 		final RSComponent travel = interfaces.get(53).getComponent(45);
-		travel.doAction("Select");
+		travel.interact("Select");
 		log("trying to press travel to deep");
 		sleep(600, 1000);
 	}
@@ -270,7 +270,7 @@ public class KubkoWhiteBerries extends Script implements PaintListener,
 		log("trying to float");
 		final RSObject station2 = objects.getNearest(12166);
 		if (station2 != null && station2.isOnScreen()) {
-			station2.doAction("Float Canoe");
+			station2.interact("Float Canoe");
 			sleep(650);
 			canoeFloated = true;
 			sleep(3000, 4000);
@@ -283,7 +283,7 @@ public class KubkoWhiteBerries extends Script implements PaintListener,
 		canoeFloated = true;
 		final RSObject station2 = objects.getNearest(12166);
 		if (station2 != null && station2.isOnScreen()) {
-			station2.doAction("Paddle Canoe");
+			station2.interact("Paddle Canoe");
 			if (interfaces.get(53).getComponent(45).isValid()) {
 				canoePaddled = true;
 			}
@@ -294,7 +294,7 @@ public class KubkoWhiteBerries extends Script implements PaintListener,
 		canoeShaped = true;
 		if (interfaces.get(52).getComponent(24).containsText("A Waka")) {
 			final RSComponent makeCanoe = interfaces.get(52).getComponent(24);
-			makeCanoe.doAction("Select");
+			makeCanoe.interact("Select");
 			log("WAKA WAKA");
 			sleep(600, 1000);
 			if (!interfaces.get(52).getComponent(24).isValid()) {
@@ -309,7 +309,7 @@ public class KubkoWhiteBerries extends Script implements PaintListener,
 		canoeChopped = true;
 		final RSObject station2 = objects.getNearest(12166);
 		if (station2 != null && station2.isOnScreen()) {
-			station2.doAction("Shape-canoe");
+			station2.interact("Shape-canoe");
 			log("trying to shape");
 			step = 4;
 		}
@@ -403,7 +403,7 @@ public class KubkoWhiteBerries extends Script implements PaintListener,
 				}
 				final RSComponent travel = interfaces.get(53).getComponent(45);
 				if (interfaces.get(53).getComponent(45).isValid()) {
-					travel.doAction("Select");
+					travel.interact("Select");
 				}
 				return 50;
 
@@ -412,11 +412,11 @@ public class KubkoWhiteBerries extends Script implements PaintListener,
 				sleep(450, 700);
 				final RSObject stairs = objects.getNearest(36773);
 				if (stairs.isOnScreen() && stairs != null) {
-					stairs.doAction("Climb-up");
+					stairs.interact("Climb-up");
 				}
 				if (game.getPlane() == 1) {
 					final RSObject stairs2 = objects.getNearest(36774);
-					stairs2.doAction("Climb-up");
+					stairs2.interact("Climb-up");
 					sleep(600, 700);
 				}
 
@@ -434,14 +434,14 @@ public class KubkoWhiteBerries extends Script implements PaintListener,
 						camera.turnTo(new RSTile(3216, 3806));
 						magic.castSpell(Magic.SPELL_TELEKINETIC_GRAB);
 						if (berryGround != null && berryGround.isOnScreen()) {
-							berryGround.doAction("Cast");
+							berryGround.interact("Cast");
 							sleep(1300, 1600);
 							spellsCasted++;
 						}
 					} else {
 						final RSGroundItem berryGround2 = groundItems.getNearest(239);
 						if (berryGround2 != null && berryGround2.isOnScreen()) {
-							berryGround2.doAction("Cast");
+							berryGround2.interact("Cast");
 							sleep(1000, 1300);
 						}
 					}
@@ -457,7 +457,7 @@ public class KubkoWhiteBerries extends Script implements PaintListener,
 			case GO_TO_LAIR:
 				final RSObject entrance = objects.getNearest(38815);
 				if (entrance != null && entrance.isOnScreen()) {
-					entrance.doAction("Go-through");
+					entrance.interact("Go-through");
 					sleep(600, 1000);
 				}
 				return 50;
@@ -525,9 +525,9 @@ public class KubkoWhiteBerries extends Script implements PaintListener,
 							final RSItem airstaff = inventory.getItem(1381);
 							sleep(600, 900);
 							if (lumbBanked == false && inventory.contains(1381)) {
-								airstaff.doAction("Wield");
-								airstaff.doAction("Wield");
-								airstaff.doAction("Wield");
+								airstaff.interact("Wield");
+								airstaff.interact("Wield");
+								airstaff.interact("Wield");
 								final RSItem wielding = equipment.getItem(Equipment.WEAPON);
 								log("we are wielding " + wielding);
 								lumbBanked = true;
@@ -564,7 +564,7 @@ public class KubkoWhiteBerries extends Script implements PaintListener,
 				final RSObject shortcut = objects.getNearest(geShortcut);
 				if (shortcut != null && shortcut.isOnScreen()) {
 					camera.turnTo(shortcut);
-					shortcut.doAction("Climb-into");
+					shortcut.interact("Climb-into");
 					sleep(4500, 5000);
 				}
 				return 50;
@@ -878,7 +878,7 @@ public class KubkoWhiteBerries extends Script implements PaintListener,
 
 		// click world select tab (if needed)
 		final RSComponent worldSelectTab = interfaces.getComponent(LOBBY_PARENT, WORLD_SELECT_BUTTON_BG_COM);
-		while (worldSelectTab.getBackgroundColor() != WORLD_SELECT_TAB_ACTIVE) {
+		while (worldSelectTab.getTextColor() != WORLD_SELECT_TAB_ACTIVE) {
 			if (interfaces.getComponent(LOBBY_PARENT, WORLD_SELECT_BUTTON_COM).doClick()) {
 				sleep(random(1500, 2000));
 			}

@@ -136,14 +136,14 @@ public class GoofyScriptsMultiCooker extends Script implements PaintListener,
 								if (range != null) {
 									if (range.isOnScreen()) {
 										if (isInterfaceValid(905)) {
-											interfaces.getComponent(905, 14).doAction("Cook All");
+											interfaces.getComponent(905, 14).interact("Cook All");
 											count = inventory.getCount(rawID);
 											sleep(2500);
 										} else {
 											if (game.getCurrentTab() == 4) {
 												status = "Cooking";
 												if (!inventory.isItemSelected()) {
-													rawfood.doAction("Use");
+													rawfood.interact("Use");
 												} else {
 													env.setUserInput(0);
 													if (rangeloc != null) {
@@ -234,14 +234,14 @@ public class GoofyScriptsMultiCooker extends Script implements PaintListener,
 							if (inventory.contains(rawID)) {
 								if (calc.pointOnScreen(fireloc)) {
 									if (isInterfaceValid(905)) {
-										interfaces.getComponent(905, 14).doAction("Cook All");
+										interfaces.getComponent(905, 14).interact("Cook All");
 										count = inventory.getCount(rawID);
 										sleep(2500);
 									} else {
 										if (game.getCurrentTab() == 4) {
 											status = "Cooking";
 											if (!inventory.isItemSelected()) {
-												rawfood.doAction("Use");
+												rawfood.interact("Use");
 											} else {
 												env.setUserInput(0);
 												if (fireloc != null) {
@@ -291,7 +291,7 @@ public class GoofyScriptsMultiCooker extends Script implements PaintListener,
 									status = "Banking";
 									if (bankguy != null) {
 										if (calc.pointOnScreen(bankguy.getScreenLocation())) {
-											if (bankguy.doAction("Bank")) {
+											if (bankguy.interact("Bank")) {
 												sleep(2000);
 											}
 										} else {

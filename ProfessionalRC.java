@@ -604,7 +604,7 @@ public class ProfessionalRC extends Script implements PaintListener, MessageList
 			RSTile newTile = walking.getClosestTileOnMap(location);
 			if (calc.tileOnScreen(newTile)) {
 				mouse.move(calc.tileToScreen(newTile));
-				menu.doAction("Walk here");
+				menu.click("Walk here");
 			} else {
 				walking.walkTileMM(newTile);
 			}

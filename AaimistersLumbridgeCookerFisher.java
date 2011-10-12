@@ -492,7 +492,7 @@ public class AaimistersLumbridgeCookerFisher extends Script implements PaintList
 			if (x.getModel().getPointOnScreen() != null) {
 				x.getModel().hover();
 				sleep(150, 300);
-				x.doAction(y);
+				x.interact(y);
 			}
 		} catch (Exception e) {
 
@@ -539,7 +539,7 @@ public class AaimistersLumbridgeCookerFisher extends Script implements PaintList
 		if (walking.getEnergy() < random(10, 30)) {
 			if (!resting && !cooking && !fishing) {
 				status = "Resting..";
-				interfaces.getComponent(750, 6).doAction("Rest");
+				interfaces.getComponent(750, 6).interact("Rest");
 				mouse.moveSlightly();
 				resting = true;
 				sleep(400, 600);
@@ -651,7 +651,7 @@ public class AaimistersLumbridgeCookerFisher extends Script implements PaintList
 				if (calc.tileOnScreen(pool.getLocation()) && AM.AtFish.contains(getMyPlayer().getLocation())) {
 					status = "Fishing..";
 					if (getMyPlayer().getAnimation()  == -1 && !fishing) {
-						pool.doAction("Cage");
+						pool.interact("Cage");
 						fishing = true;
 						return random(1000, 1200);
 					} else {
@@ -688,17 +688,17 @@ public class AaimistersLumbridgeCookerFisher extends Script implements PaintList
 					status = "Cooking..";
 					if (inventory.getSelectedItem() == null && !cooking && !interfaces.getComponent(905, 14).isValid()) {
 						RSItem shrimp = inventory.getItem(rawShrimp);
-						shrimp.doAction("Use");
+						shrimp.interact("Use");
 						return random(200, 800);
 					}
 					if (!interfaces.getComponent(905, 14).isValid()) {
 						if (inventory.getSelectedItem() != null && !cooking) {
-							cooker.doAction("Use");
+							cooker.interact("Use");
 							return random(1150, 1300);
 						}
 					} else {
 						RSComponent doCook = interfaces.getComponent(905, 14);
-						doCook.doAction("Cook");
+						doCook.interact("Cook");
 						cooking = true;
 						return random(1000, 1200);
 					}
@@ -838,19 +838,19 @@ public class AaimistersLumbridgeCookerFisher extends Script implements PaintList
 				RSComponent se = interfaces.getComponent(620, 0);
 				if (se.isValid()) {
 					if (inventory.contains(rawShrimp)) {
-						inventory.getItem(rawShrimp).doAction("Sell 50");
+						inventory.getItem(rawShrimp).interact("Sell 50");
 						sleep(1000, 1300);
 					} 
 					if (inventory.contains(cookedShrimp)) {
-						inventory.getItem(cookedShrimp).doAction("Sell 50");
+						inventory.getItem(cookedShrimp).interact("Sell 50");
 						sleep(1000, 1300);
 					} 
 					if (inventory.contains(burnShrimp)) {
-						inventory.getItem(burnShrimp).doAction("Sell 50");
+						inventory.getItem(burnShrimp).interact("Sell 50");
 						sleep(1000, 1300);
 					}
 				} else {
-					shop().doAction("Trade");
+					shop().interact("Trade");
 					return (calc.distanceTo(shop().getLocation()) * 1000);
 				}
 			}
@@ -876,9 +876,9 @@ public class AaimistersLumbridgeCookerFisher extends Script implements PaintList
 					idle++;
 					if (!opened) {
 						if (useBanker) {
-							bankP.doAction("Bank Banker");
+							bankP.interact("Bank Banker");
 						} else {
-							booth.doAction("Use-quickly");
+							booth.interact("Use-quickly");
 						}
 						opened = true;
 						return random(200, 500);

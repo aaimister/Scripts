@@ -113,7 +113,7 @@ public class PiratePlanker extends Script implements PaintListener,
 				if (objectPoint != null) {
 					try {
 						mouse.move(objectPoint);
-						if (menu.doAction("xamine")) {
+						if (menu.click("xamine")) {
 						} else {
 						}
 						sleep(random(100, 500));

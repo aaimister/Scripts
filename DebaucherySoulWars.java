@@ -879,7 +879,7 @@ public class DebaucherySoulWars extends Script implements MouseListener,
 						}
 						break;
 					case 2:
-						opp.doAction("Attack");
+						opp.interact("Attack");
 						Methods.sleep(3000, 5000);
 						break;
 					}
@@ -888,7 +888,7 @@ public class DebaucherySoulWars extends Script implements MouseListener,
 				if (pickUpBones) {
 					if (getActivityBarPercent() < 1000 || buryAtGrave) {
 						final RSGroundItem bones = groundItems.getNearest(bonesID);
-						bones.doAction("Take " + bones.getItem().getName());
+						bones.interact("Take " + bones.getItem().getName());
 						return;
 					}
 				}
@@ -911,7 +911,7 @@ public class DebaucherySoulWars extends Script implements MouseListener,
 				if (avatar.isOnScreen()) {
 					if (getMyPlayer().getInteracting() == null
 							|| !getMyPlayer().getInteracting().getName().equals(avatar.getName())) {
-						avatar.doAction("Attack " + avatar.getName());
+						avatar.interact("Attack " + avatar.getName());
 						Methods.sleep(3000, 5000);
 					}
 				} else if (avatar.isOnScreen() && calc.distanceTo(avatar) < 4) {
@@ -932,7 +932,7 @@ public class DebaucherySoulWars extends Script implements MouseListener,
 				if (avatar.isOnScreen()) {
 					if (getMyPlayer().getInteracting() == null
 							|| !getMyPlayer().getInteracting().getName().equals(avatar.getName())) {
-						avatar.doAction("Attack");
+						avatar.interact("Attack");
 						Methods.sleep(3000, 5000);
 					}
 				} else if (avatar.isOnScreen() && calc.distanceTo(avatar) < 4) {
@@ -963,7 +963,7 @@ public class DebaucherySoulWars extends Script implements MouseListener,
 				}
 				if (jellies.isOnScreen()
 						&& (getMyPlayer().getInteracting() == null || !getMyPlayer().getInteracting().getName().equals(jellies.getName()))) {
-					jellies.doAction("Attack");
+					jellies.interact("Attack");
 					Methods.sleep(3000, 5000);
 				}
 			}
@@ -983,7 +983,7 @@ public class DebaucherySoulWars extends Script implements MouseListener,
 				}
 				if (pyres.isOnScreen()
 						&& (getMyPlayer().getInteracting() == null || !getMyPlayer().getInteracting().getName().equals(pyres.getName()))) {
-					pyres.doAction("Attack");
+					pyres.interact("Attack");
 					Methods.sleep(3000, 5000);
 				}
 			}
@@ -1023,7 +1023,7 @@ public class DebaucherySoulWars extends Script implements MouseListener,
 						if (getMyPlayer().getInteracting() != null) {
 							return true;
 						} else {
-							barricade.doAction("Attack " + barricade.getName());
+							barricade.interact("Attack " + barricade.getName());
 							Methods.sleep(3000, 5000);
 							return true;
 						}
@@ -1047,7 +1047,7 @@ public class DebaucherySoulWars extends Script implements MouseListener,
 					final RSGroundItem bones = groundItems.getNearest(bonesID);
 					if (bones != null) {
 						if (bones.isOnScreen() && !inventory.isFull()) {
-							bones.doAction("Take");
+							bones.interact("Take");
 							return;
 						}
 					}
@@ -1065,7 +1065,7 @@ public class DebaucherySoulWars extends Script implements MouseListener,
 							&& !inventory.isFull()) {
 						if (getActivityBarPercent() < Methods.random(500, 800)
 								|| buryAtGrave) {
-							bones.doAction("Take");
+							bones.interact("Take");
 							return;
 						}
 					}
@@ -1082,7 +1082,7 @@ public class DebaucherySoulWars extends Script implements MouseListener,
 						} else {
 							if (!inventory.isFull()) {
 								if (getActivityBarPercent() < 700) {
-									bones.doAction("Take");
+									bones.interact("Take");
 								} else {
 									pickUpArrows();
 								}
@@ -1106,7 +1106,7 @@ public class DebaucherySoulWars extends Script implements MouseListener,
 			if (inventory.containsOneOf(bonesID)) {
 				final RSItem inventBones = inventory.getItem(bonesID);
 				if (inventBones != null) {
-					inventBones.doAction("Bury");
+					inventBones.interact("Bury");
 					Methods.sleep(700, 1200);
 				}
 			}
@@ -1160,11 +1160,11 @@ public class DebaucherySoulWars extends Script implements MouseListener,
 		if (inventory.containsOneOf(bonesID)) {
 			final RSItem inventBones = inventory.getItem(bonesID);
 			if (inventBones != null) {
-				inventBones.doAction("Destroy");
+				inventBones.interact("Destroy");
 				Methods.sleep(700, 1200);
 				if (interfaces.get(94).isValid()) {
 					final RSComponent tick = interfaces.get(94).getComponent(3);
-					tick.doAction("Continue");
+					tick.interact("Continue");
 				}
 				Methods.sleep(700, 1200);
 			}
@@ -1340,7 +1340,7 @@ public class DebaucherySoulWars extends Script implements MouseListener,
 				camera.turnTo(bandages);
 			}
 			if (bandages.isOnScreen()) {
-				if (bandages.doAction("Take-x")) {
+				if (bandages.interact("Take-x")) {
 					Methods.sleep(2500, 3000);
 					if (calc.distanceTo(bandages) <= 2
 							&& getMyPlayer().getInteracting() == null) {
@@ -1375,7 +1375,7 @@ public class DebaucherySoulWars extends Script implements MouseListener,
 				game.openTab(Game.TAB_INVENTORY);
 			}
 			if (bandage != null) {
-				bandage.doAction("Heal");
+				bandage.interact("Heal");
 				Methods.sleep(200, 400);
 			}
 		}
@@ -1388,7 +1388,7 @@ public class DebaucherySoulWars extends Script implements MouseListener,
 					&& inventory.getSelectedItem().getID() == bandageID) {
 				final RSItem bandage = inventory.getItem(bandageID);
 				if (bandage != null) {
-					bandage.doAction("Use");
+					bandage.interact("Use");
 				}
 			} else {
 				switch (Methods.random(1, 5)) {
@@ -1406,7 +1406,7 @@ public class DebaucherySoulWars extends Script implements MouseListener,
 					}
 					break;
 				default:
-					opponent().doAction("Heal " + teamMate().getName());
+					opponent().interact("Heal " + teamMate().getName());
 					Methods.sleep(3000, 5000);
 					break;
 				}
@@ -1494,7 +1494,7 @@ public class DebaucherySoulWars extends Script implements MouseListener,
 							switch (Methods.random(0, 2)) {
 							case 0:
 								if (getMyLocation().equals(Location.OUTSIDE)) {
-									if (randomTeam.doAction("Join-team")) {
+									if (randomTeam.interact("Join-team")) {
 										Methods.sleep(500, 800);
 									}
 								}
@@ -1550,7 +1550,7 @@ public class DebaucherySoulWars extends Script implements MouseListener,
 								break;
 							case 1:
 								if (getMyLocation().equals(Location.OUTSIDE)) {
-									blueBarrier.doAction("Pass");
+									blueBarrier.interact("Pass");
 								}
 								Methods.sleep(500, 800);
 								break;
@@ -1592,7 +1592,7 @@ public class DebaucherySoulWars extends Script implements MouseListener,
 								break;
 							case 1:
 								if (getMyLocation().equals(Location.OUTSIDE)) {
-									if (redBarrier.doAction("Pass")) {
+									if (redBarrier.interact("Pass")) {
 										Methods.sleep(500, 800);
 									}
 								}
@@ -1636,7 +1636,7 @@ public class DebaucherySoulWars extends Script implements MouseListener,
 								|| getMyLocation().equals(Location.BLUE_SPAWN)
 								|| getMyLocation().equals(Location.EAST_GRAVE)
 								|| getMyLocation().equals(Location.WEST_GRAVE)) {
-							Barrier.doAction("Pass");
+							Barrier.interact("Pass");
 						}
 					}
 					Methods.sleep(100, 600);
@@ -1673,7 +1673,7 @@ public class DebaucherySoulWars extends Script implements MouseListener,
 									|| getMyLocation().equals(Location.BLUE_SPAWN)
 									|| getMyLocation().equals(Location.EAST_GRAVE)
 									|| getMyLocation().equals(Location.WEST_GRAVE)) {
-								Barrier.doAction("Pass");
+								Barrier.interact("Pass");
 							}
 							break;
 						}
@@ -1774,7 +1774,7 @@ public class DebaucherySoulWars extends Script implements MouseListener,
 								final RSItem pouch = inventory.getItem(chosenFamiliar.getPouchID());
 								if (pouch != null
 										&& summoning.getSummoningPoints() <= 0) {
-									pouch.doAction("Summon");
+									pouch.interact("Summon");
 								}
 							} else if (withdrawPouches) {
 								final RSObject chest = objects.getNearest(Bank.BANK_BOOTHS);
@@ -2191,7 +2191,7 @@ public class DebaucherySoulWars extends Script implements MouseListener,
 			for (int x = 0; arrow == null || x < arrowsID.length; x++) {
 				arrow = groundItems.getNearest(arrowsID[x]);
 				if (arrow != null) {
-					arrow.doAction("Take");
+					arrow.interact("Take");
 					return;
 				}
 			}
@@ -2207,7 +2207,7 @@ public class DebaucherySoulWars extends Script implements MouseListener,
 				}
 				if (frag.isOnScreen() && !inventory.isFull()
 						&& calc.distanceTo(frag.getLocation()) < 4) {
-					frag.doAction("Take " + frag.getItem().getName());
+					frag.interact("Take " + frag.getItem().getName());
 					return true;
 				}
 			}

@@ -1032,7 +1032,7 @@ public class BytesWineGrabber extends Script implements PaintListener, MessageLi
 		safety = System.currentTimeMillis() + SAFETY_TIMEOUT;
 		RSComponent worldSelectTab = interfaces.getComponent(LOBBY_PARENT,
 				WORLD_SELECT_BUTTON_BG_COM);
-		while (worldSelectTab.getBackgroundColor() != WORLD_SELECT_TAB_ACTIVE
+		while (worldSelectTab.getTextColor() != WORLD_SELECT_TAB_ACTIVE
 				&& System.currentTimeMillis() < safety) {
 			if (interfaces.getComponent(LOBBY_PARENT, WORLD_SELECT_BUTTON_COM)
 					.doClick()) {

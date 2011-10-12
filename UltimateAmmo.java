@@ -562,7 +562,7 @@ public class UltimateAmmo extends Script implements PaintListener,
 				bank.withdraw(mould, 1);
 			}
 		} else {
-			bankBooth.doAction("Use-q");
+			bankBooth.interact("Use-q");
 			sleep(random(1200, 1300));
 		}
 	}

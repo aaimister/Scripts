@@ -153,7 +153,7 @@ public class UltraSmithing extends Script implements PaintListener, MessageListe
 				c.doClick(false);
 				waitFor(menu.isOpen(), 2000);
 				if (menu.isOpen()) {
-					if (menu.doAction("Make All")) {
+					if (menu.click("Make All")) {
 						waitFor(inventory.getCountExcept(Bar) > 0, 2000);
 					}
 					sleep(1200, 1500);

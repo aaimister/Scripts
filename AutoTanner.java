@@ -227,7 +227,7 @@ public class AutoTanner extends Script implements MessageListener,
 		case TRADE_TANNER:
 			final RSNPC tanner_npc = npcs.getNearest(AutoTanner.TANNER);
 			if (tanner_npc != null && getMyPlayer().getAnimation() == -1) {
-				tanner_npc.doAction("Trade");
+				tanner_npc.interact("Trade");
 				Methods.sleep(Methods.random(1200, 1500));
 			}
 			break;
@@ -258,7 +258,7 @@ public class AutoTanner extends Script implements MessageListener,
 		case INTERFACE:
 			final RSInterface tan_inter = interfaces.get(324);
 			if (tan_inter.isValid()) {
-				tan_inter.getComponent(hide.component_id).doAction("Tan All");
+				tan_inter.getComponent(hide.component_id).interact("Tan All");
 				for (int i = 0; i < 100 && inventory.contains(hide.tanned_id); i++) {
 					Methods.sleep(20);
 				}

@@ -262,7 +262,7 @@ public class InterfaceExplorer extends Script implements PaintListener {
 			specialtype = child.getSpecialType();
 			bounds = child.getBoundsArrayIndex();
 			model = child.getModelID();
-			color = child.getBackgroundColor();
+			color = child.getTextColor();
 			getID = child.getParentID();
 			getText = child.getText();
 			tooltip = child.getTooltip();
@@ -482,7 +482,7 @@ public class InterfaceExplorer extends Script implements PaintListener {
 				HighLightWraps.add(new HighLightInterface(a.getComponent().getParent().getInterface(), a.getComponent().getParent(), a.getComponent(), 4));
 			}
 		}
-		if (a.getComponent().getBackgroundColor() != a.getColor()) {
+		if (a.getComponent().getTextColor() != a.getColor()) {
 			if (a.getComponent().getParent() == null) {
 				HighLightWraps.add(new HighLightInterface(a.getComponent().getInterface(), a.getComponent(), null, 5));
 			} else {
@@ -658,7 +658,7 @@ public class InterfaceExplorer extends Script implements PaintListener {
 					addInfo("Size: ", size.width + "," + size.height, changes.contains(15));
 				}
 				addInfo("Model ID: ", "" + iface.getModelID(), changes.contains(4));
-				addInfo("Texture ID: ", "" + iface.getBackgroundColor(), changes.contains(5));
+				addInfo("Texture ID: ", "" + iface.getTextColor(), changes.contains(5));
 				addInfo("Parent ID: ", "" + iface.getParentID(), changes.contains(6));
 				addInfo("Text: ", "" + iface.getText(), changes.contains(7));
 				addInfo("Tooltip: ", "" + iface.getTooltip(), changes.contains(8));

@@ -1104,7 +1104,7 @@ public class BeefyBillCowKiller extends Script implements PaintListener,
 				mouse.move(obj.getModel().getPoint());
 				sleep(20, 100);
 			}
-			return menu.doAction("Chop");
+			return menu.click("Chop");
 		} else {
 			return obj.interact("Chop");
 		}
@@ -1948,7 +1948,7 @@ public class BeefyBillCowKiller extends Script implements PaintListener,
  *    Added jar detection logic.
  *    
  * v3.32
- *    Changed use of deprecated methods to new ones. (from doAction() to interact())
+ *    Changed use of deprecated methods to new ones. (from interact() to interact())
  *    removed option to pickup air staffs, until walking/climbing is fixed again.	
  *    
  * v3.33

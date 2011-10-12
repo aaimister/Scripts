@@ -109,7 +109,7 @@ public class WillowPowerCutter extends Script implements PaintListener,
 						walking.walkTileMM(tree.getLocation());
 					}
 				}
-				tree.doAction("Chop down Willow");
+				tree.interact("Chop down Willow");
 				sleep(random(2000, 3000));
 			}
 		} else {

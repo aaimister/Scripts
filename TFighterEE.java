@@ -152,7 +152,7 @@ public class TFighterEE extends Script implements PaintListener, MouseListener {
 				if (i == null) {
 					break;
 				}
-				if (i.doAction("Eat")) {
+				if (i.interact("Eat")) {
 					return true;
 				}
 			}
@@ -605,7 +605,7 @@ public class TFighterEE extends Script implements PaintListener, MouseListener {
 						} else {
 							mouse.click(false);
 							sleep(random(100, 200));
-							if (menu.doAction(action)) {
+							if (menu.click(action)) {
 								return 0;
 							}
 						}
@@ -711,7 +711,7 @@ public class TFighterEE extends Script implements PaintListener, MouseListener {
 							if (!menu.contains(action)) {
 								break;
 							}
-							if (menu.doAction(action)) {
+							if (menu.click(action)) {
 								return 0;
 							}
 						}
@@ -991,7 +991,7 @@ public class TFighterEE extends Script implements PaintListener, MouseListener {
 			if (inventory.getItems(VIAL).length != 0) {
 				for (final RSItem i : inventory.getItems(VIAL)) {
 					final int n = inventory.getCount(true);
-					i.doAction("Drop Vial");
+					i.interact("Drop Vial");
 					waitForInvChange(n);
 				}
 			}
@@ -1175,7 +1175,7 @@ public class TFighterEE extends Script implements PaintListener, MouseListener {
 			if (!calc.tileOnScreen(startTile)) {
 				walking.walkTileMM(startTile);
 			} else {
-				tiles.doAction(startTile, "Walk");
+				tiles.interact(startTile, "Walk");
 			}
 			waitWhileMoving();
 			return random(200, 500);

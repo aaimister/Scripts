@@ -1067,7 +1067,7 @@ public class FallenSafeCracker extends Script implements PaintListener,
 		final long start = System.currentTimeMillis();
 		boolean clicked = false;
 		while (!clicked && System.currentTimeMillis() - start < 5000) {
-			if (doActionAtModel(SafeModel, s)) {
+			if (interactAtModel(SafeModel, s)) {
 				clicked = true;
 				if (Methods.random(0, 100) > 70) {
 					mouse.moveRandomly(200);
@@ -1181,7 +1181,7 @@ public class FallenSafeCracker extends Script implements PaintListener,
 		return false;
 	}
 
-	private boolean doActionAtModel(final RSModel model, final String action) {
+	private boolean interactAtModel(final RSModel model, final String action) {
 		if (model != null) {
 			int iters = Methods.random(3, 6);
 			while (--iters > 0 && !menu.contains(action)) {
@@ -1197,7 +1197,7 @@ public class FallenSafeCracker extends Script implements PaintListener,
 				}
 			}
 			if (menu.contains(action)) {
-				return menu.doAction(action);
+				return menu.click(action);
 			} else {
 				return false;
 			}
@@ -1256,7 +1256,7 @@ public class FallenSafeCracker extends Script implements PaintListener,
 				&& Integer.parseInt(interfaces.get(748).getComponent(8).getText()) <= FallenSafeCracker.EatingPoint) {
 			final RSItem eatMe = inventory.getItem(FoodIDS);
 			if (eatMe != null) {
-				if (eatMe.doAction("eat")) {
+				if (eatMe.interact("eat")) {
 					waitForAnim(1000);
 					Methods.sleep(Methods.random(200, 400));
 				}
@@ -1267,7 +1267,7 @@ public class FallenSafeCracker extends Script implements PaintListener,
 				final RSItem eatMe2 = inventory.getItem(FoodIDS);
 				if (eatMe2 != null) {
 					Methods.sleep(Methods.random(1000, 1300));
-					if (eatMe2.doAction("eat")) {
+					if (eatMe2.interact("eat")) {
 						waitForAnim(1000);
 						Methods.sleep(Methods.random(200, 400));
 					}
@@ -1309,7 +1309,7 @@ public class FallenSafeCracker extends Script implements PaintListener,
 			if (objectPoint != null) {
 				try {
 					mouse.move(objectPoint);
-					if (menu.doAction("xamine")) {
+					if (menu.click("xamine")) {
 					} else {
 					}
 					Methods.sleep(Methods.random(100, 500));
@@ -1558,7 +1558,7 @@ public class FallenSafeCracker extends Script implements PaintListener,
 			if (inventory.isFull()) {
 				if (inventory.containsOneOf(FoodIDS)) {
 					if (Integer.parseInt(interfaces.get(748).getComponent(8).getText()) <= skills.getRealLevel(Skills.CONSTITUTION) * 10 - 100) {
-						inventory.getItem(FoodIDS).doAction("eat");
+						inventory.getItem(FoodIDS).interact("eat");
 						waitForAnim(1000);
 						Methods.sleep(Methods.random(200, 400));
 						break;
@@ -1582,7 +1582,7 @@ public class FallenSafeCracker extends Script implements PaintListener,
 			break;
 		case OPENBANK:
 			final RSNPC Bankerr = npcs.getNearest(BankerID);
-			if (Bankerr.doAction("Bank")) {
+			if (Bankerr.interact("Bank")) {
 				if (waitForIF(interfaces.get(Bank.INTERFACE_BANK), 2000)) {
 					Methods.sleep(Methods.random(200, 300));
 				}
@@ -2234,7 +2234,7 @@ public class FallenSafeCracker extends Script implements PaintListener,
 			return;
 		}
 		if (calc.tileOnScreen(dest)) {
-			tiles.doAction(dest, "Walk here");
+			tiles.interact(dest, "Walk here");
 			waitToMove(1000);
 			mouse.moveSlightly();
 			waitToStop(3000);
@@ -2525,23 +2525,23 @@ public class FallenSafeCracker extends Script implements PaintListener,
 		}
 		switch (count) {
 		case 0: // Withdraw All
-			return item.doAction("Withdraw-All");
+			return item.interact("Withdraw-All");
 		case 1: // Withdraw 1
 			return item.doClick(true);
 		case 5: // Withdraw 5
 		case 10: // Withdraw 10
-			return item.doAction("Withdraw-" + count);
+			return item.interact("Withdraw-" + count);
 		default: // Withdraw x
 			if (item.doClick(false)) {
 				Methods.sleep(Methods.random(100, 300));
 				if (menu.contains("Withdraw-" + count)) {
-					if (menu.doAction("Withdraw-" + count)) {
+					if (menu.click("Withdraw-" + count)) {
 						Methods.sleep(Methods.random(100, 200));
 						return true;
 					}
 					return false;
 				}
-				if (item.doAction("Withdraw-X")) {
+				if (item.interact("Withdraw-X")) {
 					Methods.sleep(Methods.random(1000, 1300));
 					keyboard.sendText("" + count, true);
 				}

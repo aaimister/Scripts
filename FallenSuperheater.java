@@ -161,13 +161,13 @@ public class FallenSuperheater extends Script implements PaintListener,
 			final RSObject Booth = objects.getNearest(BANK_BOOTHS);
 			if (Chest != null) {
 				if (Chest.isOnScreen()) {
-					// if(Chest.doAction("Bank Bank Chest") ||
-					// Chest.doAction("Use Bank Chest") ||
-					// Chest.doAction("Bank Chest >")) {
+					// if(Chest.interact("Bank Bank Chest") ||
+					// Chest.interact("Use Bank Chest") ||
+					// Chest.interact("Bank Chest >")) {
 					if (click(Chest.getLocation(), BANK_CHESTS)
-							|| Chest.doAction("Bank Bank Chest")
-							|| Chest.doAction("Use Bank Chest")
-							|| Chest.doAction("Bank Chest >")) {
+							|| Chest.interact("Bank Bank Chest")
+							|| Chest.interact("Use Bank Chest")
+							|| Chest.interact("Bank Chest >")) {
 						if (waitToOpen()) {
 							try {
 								Thread.sleep(Methods.random(200, 300));
@@ -183,7 +183,7 @@ public class FallenSuperheater extends Script implements PaintListener,
 				}
 			} else if (Banker != null) {
 				if (Banker.isOnScreen()) {
-					if (Banker.doAction("Bank Banker")) {
+					if (Banker.interact("Bank Banker")) {
 						if (waitToOpen()) {
 							try {
 								Thread.sleep(Methods.random(200, 300));
@@ -199,7 +199,7 @@ public class FallenSuperheater extends Script implements PaintListener,
 				}
 			} else if (Booth != null) {
 				if (Booth.isOnScreen()) {
-					if (Booth.doAction("Use-quickly Bank booth")) {
+					if (Booth.interact("Use-quickly Bank booth")) {
 						if (waitToOpen()) {
 							try {
 								Thread.sleep(Methods.random(200, 300));
@@ -1329,7 +1329,7 @@ public class FallenSuperheater extends Script implements PaintListener,
 				return false;
 			}
 			final RSComponent item = possible.get(possible.size());
-			return item.doAction(option);
+			return item.interact(option);
 		} catch (final Exception e) {
 			log("atInventoryItem(int itemID, String option) Error: " + e);
 			return false;
@@ -1452,7 +1452,7 @@ public class FallenSuperheater extends Script implements PaintListener,
 			} else {
 				final RSItem bag = inventory.getItem(cBag);
 				if (bag != null) {
-					if (bag.doAction("Fill Coal bag")) {
+					if (bag.interact("Fill Coal bag")) {
 						waitForDepositedItem(Methods.random(2000, 3000));
 						Methods.sleep(Methods.random(100, 200));
 					}
@@ -1624,7 +1624,7 @@ public class FallenSuperheater extends Script implements PaintListener,
 						}
 					}
 					for (int tries = 0; tries < 5; tries++) {
-						if (item.doAction(inventory.getCount(true, item.getComponentID()) > 1 ? "Deposit-All"
+						if (item.interact(inventory.getCount(true, item.getComponentID()) > 1 ? "Deposit-All"
 								: "Deposit")) {
 							waitForDepositedItem(Methods.random(2000, 3000));
 							final int cInvCount = bank.isOpen() ? inventory.getCount(true)
@@ -1672,7 +1672,7 @@ public class FallenSuperheater extends Script implements PaintListener,
 			if (objectPoint != null) {
 				try {
 					mouse.move(objectPoint);
-					if (menu.doAction("Examine")) {
+					if (menu.click("Examine")) {
 					} else {
 					}
 					Methods.sleep(Methods.random(100, 500));
@@ -1906,7 +1906,7 @@ public class FallenSuperheater extends Script implements PaintListener,
 			if (!bank.isOpen() && game.getCurrentTab() == Game.TAB_INVENTORY) {
 				checkBooleans();
 				final RSItem closest = getClosestItem(Ore1, mouse.getLocation());
-				if (closest != null && closest.doAction("Cast")
+				if (closest != null && closest.interact("Cast")
 						|| atLastInventoryItem(Ore1, "Cast")) {
 					spellAfterMath();
 					break;
@@ -2632,23 +2632,23 @@ public class FallenSuperheater extends Script implements PaintListener,
 		}
 		switch (count) {
 		case 0: // Withdraw All
-			return item.doAction("Withdraw-All");
+			return item.interact("Withdraw-All");
 		case 1: // Withdraw 1
 			return item.doClick(true);
 		case 5: // Withdraw 5
 		case 10: // Withdraw 10
-			return item.doAction("Withdraw-" + count);
+			return item.interact("Withdraw-" + count);
 		default: // Withdraw x
 			if (item.doClick(false)) {
 				Methods.sleep(Methods.random(100, 300));
 				if (menu.contains("Withdraw-" + count + " ")) {
-					if (menu.doAction("Withdraw-" + count + " ")) {
+					if (menu.click("Withdraw-" + count + " ")) {
 						Methods.sleep(Methods.random(100, 200));
 						return true;
 					}
 					return false;
 				}
-				if (item.doAction("Withdraw-X")) {
+				if (item.interact("Withdraw-X")) {
 					Methods.sleep(Methods.random(1000, 1300));
 					keyboard.sendText("" + count, true);
 				}

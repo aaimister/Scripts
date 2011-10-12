@@ -203,7 +203,7 @@ public class SneakyFarmer extends Script implements MessageListener, PaintListen
                 walking.walkTileMM(plot.getLocation(), 1, 1);
                 sleep(random(3000,4000));
             }
-            plot.doAction(inspect);
+            plot.interact(inspect);
         }
     }
     
@@ -211,7 +211,7 @@ public class SneakyFarmer extends Script implements MessageListener, PaintListen
         status = "Picking herbs";
         RSObject plot = objects.getNearest(herbPlot);
         if (plot != null) {
-            plot.doAction(pick);
+            plot.interact(pick);
             sleep(random(1250,2000));
             Timer idleTimer = new Timer(random(1250,2000));
             while(idleTimer.isRunning()) {
@@ -248,7 +248,7 @@ public class SneakyFarmer extends Script implements MessageListener, PaintListen
         status = "Clearing dead herbs";
         RSObject plot = objects.getNearest(herbPlot);
         if (plot != null) {
-            plot.doAction(clear);
+            plot.interact(clear);
             sleep(random(1250,2000));
             Timer idleTimer = new Timer(random(1250,2000));
             while(idleTimer.isRunning()) {
@@ -264,7 +264,7 @@ public class SneakyFarmer extends Script implements MessageListener, PaintListen
         status = "Raking the patch";
         RSObject plot = objects.getNearest(herbPlot);
         if (plot != null) {
-            plot.doAction(rake);
+            plot.interact(rake);
             sleep(random(1250,2000));
             Timer idleTimer = new Timer(random(1250,2000));
             while(idleTimer.isRunning()) {
@@ -287,7 +287,7 @@ public class SneakyFarmer extends Script implements MessageListener, PaintListen
                     sleep(random(3000,4000));
                 }
                 
-                leprechaun.doAction("Exchange");
+                leprechaun.interact("Exchange");
                 sleep(random(1500,2000));
                 mouse.click(359,265,10,10,true);
                 sleep(random(300,900));
@@ -349,10 +349,10 @@ public class SneakyFarmer extends Script implements MessageListener, PaintListen
             int tmp = inventory.getCount(grimyID);
             for (int i = 0; i < 5; i++) {
                 if (tmp == inventory.getCount(grimyID)) {
-                    inventory.getItem(grimyID).doAction("Use");
+                    inventory.getItem(grimyID).interact("Use");
                     sleep(200,300); 
                     if(inventory.isItemSelected()){ 
-                        leprechaun.doAction("Use");
+                        leprechaun.interact("Use");
                         sleep(3000,4000);
                     }
                 } else break;
@@ -442,7 +442,7 @@ public class SneakyFarmer extends Script implements MessageListener, PaintListen
     private void dropAll(ArrayList<Integer> ids) {
         for(RSItem item : inventory.getItems()) {
             if(ids.contains(item.getID())) {
-                if (item.doAction("Drop"))
+                if (item.interact("Drop"))
                     sleep(random(500,700));
             }
        }

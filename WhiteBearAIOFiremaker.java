@@ -2910,9 +2910,9 @@ public class WhiteBearAIOFiremaker extends Script implements PaintListener,
 						drawStringMain(g, "Break Length:", "Random", r, 20, 35, 1, true);
 					} else {
 						drawStringMain(g, "Break Distance:", Integer.toString(midTime)
-								+ " ±" + Integer.toString(randTime), r, 20, 35, 0, true);
+								+ " ï¿½" + Integer.toString(randTime), r, 20, 35, 0, true);
 						drawStringMain(g, "Break Length:", Integer.toString(midLength)
-								+ " ±" + Integer.toString(randLength), r, 20, 35, 1, true);
+								+ " ï¿½" + Integer.toString(randLength), r, 20, 35, 1, true);
 					}
 					drawStringMain(g, "Next Break:", (String) formatTime((int) (nextBreak - System.currentTimeMillis())), r, 20, 35, 3, true);
 					drawStringMain(g, "Break Length:", (String) formatTime((int) nextLength), r, 20, 35, 4, true);
@@ -3433,7 +3433,7 @@ public class WhiteBearAIOFiremaker extends Script implements PaintListener,
 		}
 	}
 
-	private int doAction() {
+	private int interact() {
 		switch (getState()) {
 		case Generate:
 			laneActive = false;
@@ -3555,21 +3555,21 @@ public class WhiteBearAIOFiremaker extends Script implements PaintListener,
 				use.hovering = null;
 				if (inventory.getSelectedItem() != null
 						&& inventory.getSelectedItem().getID() == logs[logId]) {
-					if (!inventory.getItem(590).doAction("Use " + name[logId])) {
+					if (!inventory.getItem(590).interact("Use " + name[logId])) {
 						return 100;
 					}
 					sleep(random(100, 200));
 				} else {
 					if (inventory.getSelectedItem() == null
 							|| inventory.getSelectedItem().getID() != 590) {
-						if (!inventory.getItem(590).doAction("Use Tinderbox")) {
+						if (!inventory.getItem(590).interact("Use Tinderbox")) {
 							return 100;
 						}
 						sleep(random(90, 150));
 					}
 					if (inventory.getSelectedItem() == null
 							|| inventory.getSelectedItem().getID() != logs[logId]) {
-						if (!inventory.getItem(logs[logId]).doAction("Use")) {
+						if (!inventory.getItem(logs[logId]).interact("Use")) {
 							return 100;
 						}
 						sleep(random(300, 500));
@@ -3601,7 +3601,7 @@ public class WhiteBearAIOFiremaker extends Script implements PaintListener,
 				// Hovering
 				if (inventory.getSelectedItem() == null) {
 					if (next != null) {
-						if (inventory.getItem(590).doAction("Use Tinderbox")) {
+						if (inventory.getItem(590).interact("Use Tinderbox")) {
 							sleep(random(100, 200));
 							next.doHover();
 							use.hovering = next;
@@ -3991,7 +3991,7 @@ public class WhiteBearAIOFiremaker extends Script implements PaintListener,
 			}
 
 			startRunning(runEnergy);
-			return doAction();
+			return interact();
 		} catch (final java.lang.Throwable t) {
 			return 100;
 		}
@@ -4203,7 +4203,7 @@ public class WhiteBearAIOFiremaker extends Script implements PaintListener,
 		} catch (final Throwable e) {
 		}
 		try {
-			return menu.doAction(action);
+			return menu.click(action);
 		} catch (final Throwable e) {
 		}
 		return false;
