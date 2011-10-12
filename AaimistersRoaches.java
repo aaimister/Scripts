@@ -494,7 +494,6 @@ public class AaimistersRoaches  extends Script implements PaintListener, MouseLi
 			long varTime = random(3660000, 10800000);
 			nextBreak = System.currentTimeMillis() + varTime;
 			nextBreakT = varTime;
-			long varLength = random(900000, 3600000);
 			nextLength = nextBreakT;
 		} else {
 			int diff = random(0, 5) * 1000 * 60;
@@ -1331,6 +1330,7 @@ public class AaimistersRoaches  extends Script implements PaintListener, MouseLi
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	public void checkXP() {
 		if (game.getCurrentTab() != 2) {
 			game.openTab(2);

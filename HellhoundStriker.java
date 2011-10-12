@@ -1,6 +1,5 @@
 
 import java.net.URL;
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import javax.swing.event.*;
 import java.io.*;
@@ -8,8 +7,6 @@ import java.io.*;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.RenderingHints;
 import java.awt.event.*;
 import java.awt.*;
 
@@ -21,7 +18,7 @@ import org.rsbot.event.listeners.*;
 import org.rsbot.event.events.*;
 
 @ScriptManifest(authors={"Strikeskids"}, name="HellhoundStriker", description="Kills hellhounds at the taverly dungeon", version=2.05)
-
+@SuppressWarnings("deprecation")
 public class HellhoundStriker extends Script implements PaintListener, MessageListener, MouseListener {
     
     private final Color color1 = new Color(202, 184, 150);
@@ -59,7 +56,7 @@ public class HellhoundStriker extends Script implements PaintListener, MessageLi
     RSTile altar2Loc=new RSTile(2608,3209);
     RSTile failSafeLoc = new RSTile(2880,9817);
     int[] startXp=new int[4];
-    int[] skillOrder={skills.ATTACK,skills.STRENGTH,skills.DEFENSE,skills.CONSTITUTION};
+    int[] skillOrder={Skills.ATTACK,Skills.STRENGTH,Skills.DEFENSE,Skills.CONSTITUTION};
     String[] skillNames={"Att","Str","Def","Cst"};
     boolean paintOpen=true;
 
@@ -242,7 +239,7 @@ public class HellhoundStriker extends Script implements PaintListener, MessageLi
         return value;
     }
     
-    private int looper() {
+	private int looper() {
         if (!hasStarted) {
             stopScript();
             return 0;
@@ -260,8 +257,8 @@ public class HellhoundStriker extends Script implements PaintListener, MessageLi
                 inventory.getItem(food).interact("Eat");
             }
             else if (combat.getLifePoints()<300) {
-                if (game.getCurrentTab()!=game.TAB_INVENTORY) {
-                    game.openTab(game.TAB_INVENTORY);
+                if (game.getCurrentTab()!=Game.TAB_INVENTORY) {
+                    game.openTab(Game.TAB_INVENTORY);
                     sleep(700);
                 }
                 if (inventory.getItem(faladorTele)!=null) inventory.getItem(faladorTele).interact("Break");
@@ -274,7 +271,7 @@ public class HellhoundStriker extends Script implements PaintListener, MessageLi
         }
         if (charmInBank[0]==-1) {
             for (int i=0;i<charmInBank.length;i++) {
-                if (game.getCurrentTab()==game.TAB_INVENTORY&&inventory.contains(charmId[i])) {
+                if (game.getCurrentTab()==Game.TAB_INVENTORY&&inventory.contains(charmId[i])) {
                     charmInBank[i] = -inventory.getCount(true,charmId[i]);
                 }
                 else {
@@ -283,12 +280,12 @@ public class HellhoundStriker extends Script implements PaintListener, MessageLi
             }
         }
         if (useSpec&&normWep==-1) {
-            if (game.getCurrentTab()!=game.TAB_EQUIPMENT) {
-                game.openTab(game.TAB_EQUIPMENT);
+            if (game.getCurrentTab()!=Game.TAB_EQUIPMENT) {
+                game.openTab(Game.TAB_EQUIPMENT);
                 sleep(700);
             }
-            normWep = equipment.getItem(equipment.WEAPON).getID();
-            game.openTab(game.TAB_INVENTORY);
+            normWep = equipment.getItem(Equipment.WEAPON).getID();
+            game.openTab(Game.TAB_INVENTORY);
             sleep(700);
         }
         if (game.isLoggedIn()) {            
@@ -334,16 +331,16 @@ public class HellhoundStriker extends Script implements PaintListener, MessageLi
                 logm("Recharge prayer");
                 prayer.setQuickPrayer(false);
                 if (useMonastery) {
-                    if (game.getCurrentTab()!=game.TAB_EQUIPMENT) {
-                        game.openTab(game.TAB_EQUIPMENT);
+                    if (game.getCurrentTab()!=Game.TAB_EQUIPMENT) {
+                        game.openTab(Game.TAB_EQUIPMENT);
                         sleep(700);
                     }
-                    equipment.getItem(equipment.CAPE).interact("Monastery");
+                    equipment.getItem(Equipment.CAPE).interact("Monastery");
                     prayingAtMonastery = true;
                     return 700;
                 }
                 walkingToAltar=true;
-                if (combat.getPrayerPoints()==skills.getRealLevel(skills.PRAYER)*10&&getMyPlayer().getLocation().getZ()==0) {
+                if (combat.getPrayerPoints()==skills.getRealLevel(Skills.PRAYER)*10&&getMyPlayer().getLocation().getZ()==0) {
                     walkingToAltar=false;
                     return 100;
                 }
@@ -410,7 +407,7 @@ public class HellhoundStriker extends Script implements PaintListener, MessageLi
                 }
                 else {
                     //On second floor
-                    if (combat.getPrayerPoints()==skills.getRealLevel(skills.PRAYER)*10) {
+                    if (combat.getPrayerPoints()==skills.getRealLevel(Skills.PRAYER)*10) {
                         inventory.getItem(faladorTele).interact("Break");
                         return 700;
                     }
@@ -433,15 +430,15 @@ public class HellhoundStriker extends Script implements PaintListener, MessageLi
             case MONASTERY:
                 logm("Praying at monastery");
                 prayingAtMonastery = true;
-                if (combat.getPrayerPoints()==skills.getRealLevel(skills.PRAYER)*10) {
+                if (combat.getPrayerPoints()==skills.getRealLevel(Skills.PRAYER)*10) {
                     if (calc.distanceTo(altar2Loc)>calc.distanceTo(bankLoc)) {
                         prayingAtMonastery=false;
                         return 100;
                     }
                     else {
                         logm("Tele back to falador");
-                        if (game.getCurrentTab()!=game.TAB_INVENTORY) {
-                            game.openTab(game.TAB_INVENTORY);
+                        if (game.getCurrentTab()!=Game.TAB_INVENTORY) {
+                            game.openTab(Game.TAB_INVENTORY);
                             sleep(700);
                         }
                         inventory.getItem(faladorTele).interact("Break");
@@ -477,7 +474,7 @@ public class HellhoundStriker extends Script implements PaintListener, MessageLi
                 return 100;
             case OPEN_BANK:
                 logm("Open the bank");
-                RSObject bankBooth=objects.getNearest(bank.BANK_BOOTHS);
+                RSObject bankBooth=objects.getNearest(Bank.BANK_BOOTHS);
                 if (bankBooth!=null) {
                     if (bankBooth.isOnScreen()) {
                         bankBooth.interact("Use-quick");
@@ -487,7 +484,7 @@ public class HellhoundStriker extends Script implements PaintListener, MessageLi
                     }
                 }
                 else {
-                    RSNPC banker = npcs.getNearest(bank.BANKERS);
+                    RSNPC banker = npcs.getNearest(Bank.BANKERS);
                     if (banker!=null) {
                         if (banker.isOnScreen()) {
                             banker.interact("Bank");
@@ -594,7 +591,7 @@ public class HellhoundStriker extends Script implements PaintListener, MessageLi
                 return 1800;
             case CRAWL_PIPE:
                 logm("Crawl through the pipe");
-                if (useAgil&&skills.getCurrentLevel(skills.AGILITY)<70) {
+                if (useAgil&&skills.getCurrentLevel(Skills.AGILITY)<70) {
                     if (usePot) inventory.getItem(agilPotion).interact("Drink");
                     if (usePie) inventory.getItem(summerPie).interact("Eat");
                     return 1600;
@@ -607,8 +604,8 @@ public class HellhoundStriker extends Script implements PaintListener, MessageLi
              case TELE:
                 logm("Teleport");
                 prayer.setQuickPrayer(false);
-                if (game.getCurrentTab()!=game.TAB_INVENTORY) {
-                    game.openTab(game.TAB_INVENTORY);
+                if (game.getCurrentTab()!=Game.TAB_INVENTORY) {
+                    game.openTab(Game.TAB_INVENTORY);
                     sleep(700);
                 }
                 if (inventory.getItem(faladorTele)!=null) {
@@ -630,8 +627,8 @@ public class HellhoundStriker extends Script implements PaintListener, MessageLi
                 antiBan();
                 return 700;
             case EQUIP_NORM:
-                if (game.getCurrentTab()!=game.TAB_INVENTORY) {
-                    game.openTab(game.TAB_INVENTORY);
+                if (game.getCurrentTab()!=Game.TAB_INVENTORY) {
+                    game.openTab(Game.TAB_INVENTORY);
                     sleep(700);
                 }
                 inventory.getItem(normWep).interact("W");
@@ -651,11 +648,11 @@ public class HellhoundStriker extends Script implements PaintListener, MessageLi
             switch(random(0,3)) {
                 case 0:
                     if (random(0,7)==2) {
-                        game.openTab(game.TAB_STATS);
+                        game.openTab(Game.TAB_STATS);
                         sleep(1000);
-                        skills.doHover(skills.INTERFACE_STRENGTH);
+                        skills.doHover(Skills.INTERFACE_STRENGTH);
                         sleep(1000);
-                        game.openTab(game.TAB_INVENTORY);
+                        game.openTab(Game.TAB_INVENTORY);
                     }
                     break;
                 case 1:
@@ -718,16 +715,16 @@ public class HellhoundStriker extends Script implements PaintListener, MessageLi
         if (combat.getSpecialBarEnergy()<25||!canDoSpec) {
             doingSpec = false;
             canDoSpec = true;
-            if (game.getCurrentTab()!=game.TAB_INVENTORY) {
-                game.openTab(game.TAB_INVENTORY);
+            if (game.getCurrentTab()!=Game.TAB_INVENTORY) {
+                game.openTab(Game.TAB_INVENTORY);
             }
             if (!useSameWeap&&inventory.contains(normWep)) {
                 inventory.getItem(normWep).interact("W");
             }
         }
         if (!combat.isSpecialEnabled()) {
-            if (game.getCurrentTab()!=game.TAB_ATTACK) {
-                game.openTab(game.TAB_ATTACK);
+            if (game.getCurrentTab()!=Game.TAB_ATTACK) {
+                game.openTab(Game.TAB_ATTACK);
             }
             combat.setSpecialAttack(true);
         }
@@ -738,7 +735,7 @@ public class HellhoundStriker extends Script implements PaintListener, MessageLi
             if (!useSameWeap) {
                 inventory.getItem(specWep).interact("W");
             }
-            game.openTab(game.TAB_ATTACK);
+            game.openTab(Game.TAB_ATTACK);
             sleep(700);
             if (!combat.isSpecialEnabled()) {
                 combat.setSpecialAttack(true); 
@@ -804,8 +801,6 @@ public class HellhoundStriker extends Script implements PaintListener, MessageLi
     }
     
     private int getLengthToHound(RSNPC h) {
-        RSArea lowRidge = new RSArea(new RSTile[]{new RSTile(2859,9849),new RSTile(2864,9842),new RSTile(2863,9833),new RSTile(2851,9833),new RSTile(2851,9849)});
-        RSArea highRidge = new RSArea(new RSTile[]{new RSTile(2873,9818),new RSTile(2873,9849), new RSTile(2862,9849),new RSTile(2865,9844),new RSTile(2865,9831), new RSTile(2865,9818)});
         RSTile hLoc = h.getLocation();
         RSTile myLoc = getMyPlayer().getLocation();
         
@@ -826,13 +821,13 @@ public class HellhoundStriker extends Script implements PaintListener, MessageLi
         if (numPray>0&&combat.getPrayerPoints()<200) {
             drinkPrayPot();
         }
-        if (numPots>0&&skills.getRealLevel(skills.ATTACK)+5>=skills.getCurrentLevel(skills.ATTACK)) {
+        if (numPots>0&&skills.getRealLevel(Skills.ATTACK)+5>=skills.getCurrentLevel(Skills.ATTACK)) {
             drinkAtt();
         }
-        if (numPots>0&&skills.getRealLevel(skills.STRENGTH)+5>=skills.getCurrentLevel(skills.STRENGTH)) {
+        if (numPots>0&&skills.getRealLevel(Skills.STRENGTH)+5>=skills.getCurrentLevel(Skills.STRENGTH)) {
             drinkStr();
         }
-        if (numDef>0&&skills.getRealLevel(skills.DEFENSE)>=skills.getCurrentLevel(skills.DEFENSE)) {
+        if (numDef>0&&skills.getRealLevel(Skills.DEFENSE)>=skills.getCurrentLevel(Skills.DEFENSE)) {
             drinkDef();
         }
     }
@@ -1011,7 +1006,7 @@ public class HellhoundStriker extends Script implements PaintListener, MessageLi
             else {
                 //log("Not past wall so chekc if invent is ready to go");
                 if (useAltar) {
-                    if (numPray>0&&combat.getPrayerPoints()<skills.getRealLevel(skills.PRAYER)*10) {
+                    if (numPray>0&&combat.getPrayerPoints()<skills.getRealLevel(Skills.PRAYER)*10) {
                         return TaskEnum.WALK_TO_ALTAR;
                     }
                 }
@@ -1079,34 +1074,6 @@ public class HellhoundStriker extends Script implements PaintListener, MessageLi
         return true;
     }
     
-    private boolean arrayContains(int[] a, int b) {
-        for (int i=0;i<a.length;i++) {
-            if (a[i]==b) return true;
-        }
-        return false;
-    }
-    
-    private int inArrayAtLocation(int[] a, int b) {
-        for (int i=0;i<a.length;i++) {
-            if (a[i]==b) return i;
-        }
-        return -1;
-    }
-    
-    private boolean arrayContains(String[] a, String b) {
-        for (int i=0;i<a.length;i++) {
-            if (a[i].equalsIgnoreCase(b)) return true;
-        }
-        return false;
-    }
-    
-    private int inArrayAtLocation(String[] a, String b) {
-        for (int i=0;i<a.length;i++) {
-            if (a[i].equalsIgnoreCase(b)) return i;
-        }
-        return -1;
-    }
-                                                            
     private boolean arrayContainsContains(String[] a, String b) {
         if (b==null) return false;
         for (int i=0;i<a.length;i++) {
@@ -1157,7 +1124,11 @@ public class HellhoundStriker extends Script implements PaintListener, MessageLi
     }
     
     class OptionPanel extends JPanel {
-        JLabel[] labels ={new JLabel("Prayer: 06"),new JLabel("Food: 03"),new JLabel("Food Id:"),new JLabel("Super att/str: 02"),new JLabel("Super def: 00"),new JLabel("Mouse speed: 04"), new JLabel("Pray location:"), new JLabel("For pipe:"), new JLabel("Special Attack"), new JLabel("Stopping:"),new JLabel("Stop on level:")};
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = -5851580345332893545L;
+		JLabel[] labels ={new JLabel("Prayer: 06"),new JLabel("Food: 03"),new JLabel("Food Id:"),new JLabel("Super att/str: 02"),new JLabel("Super def: 00"),new JLabel("Mouse speed: 04"), new JLabel("Pray location:"), new JLabel("For pipe:"), new JLabel("Special Attack"), new JLabel("Stopping:"),new JLabel("Stop on level:")};
         String[] titles = {"Prayer","Food","Food id","Super att/str","Super def","Mouse speed"};
         int[] startValues = {6,3,379,2,0,4,-1,-1,-1,-1,-1};
         int[] maximums = {14,11,-1,6,8,10,-1,-1,-1,-1,-1};
@@ -1172,7 +1143,7 @@ public class HellhoundStriker extends Script implements PaintListener, MessageLi
             c.gridx = 0;
             c.gridy = 0;
             c.anchor = GridBagConstraints.WEST;
-            for (int i=0,j=0;i<labels.length;i++) {
+            for (int i=0;i<labels.length;i++) {
                 c.gridy = i;
                 if (labels[i]!=null) {
                     add(labels[i],c);
@@ -1463,7 +1434,12 @@ public class HellhoundStriker extends Script implements PaintListener, MessageLi
     }
     
     class AboutPanel extends JPanel {
-        AboutPanel() {
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = -4619158508348690358L;
+
+		AboutPanel() {
             setLayout(new BorderLayout());
             JTextArea jtf = new JTextArea("Created by Strikeskids\nTo use you must have 65 agility\nIt is recommended that you bring 2 food in case of emergencies\nSet quick prayers to protect item and protect melee\nHave antipoison, falador teleports, super pots (if using), prayer pots (if using), and food (if using) in one bank tab\nIf praying at monastery you must be wearing an ardy task cape\nHave all food and potions used, vials, and falador teleports in one bank tab. Have that bank tab selected",5,120);
             JScrollPane jsp = new JScrollPane(jtf);
@@ -1528,7 +1504,7 @@ public class HellhoundStriker extends Script implements PaintListener, MessageLi
             for (int i=0;i<4;i++) {
                 g.setColor(charmColors[i]);
                 count = 0;
-                if (game.getCurrentTab()==game.TAB_INVENTORY&&inventory.contains(charmId[i])) {
+                if (game.getCurrentTab()==Game.TAB_INVENTORY&&inventory.contains(charmId[i])) {
                     count = inventory.getCount(true,charmId[i]);
                 }
                 count += charmInBank[i];
@@ -1542,7 +1518,7 @@ public class HellhoundStriker extends Script implements PaintListener, MessageLi
             }
             g.setColor(color2);
             count = 0;
-            if (game.getCurrentTab()==game.TAB_INVENTORY&&inventory.contains("Starved ancient effigy")) {
+            if (game.getCurrentTab()==Game.TAB_INVENTORY&&inventory.contains("Starved ancient effigy")) {
                 count = 1;
             }
             count += effigyInBank;
@@ -1562,7 +1538,7 @@ public class HellhoundStriker extends Script implements PaintListener, MessageLi
                     g.fillRect(188, 368+i*18, (int)(skills.getPercentToNextLevel(skillOrder[i])*306/100), 13);
                     g.setColor(color2);
                     curLvl = skills.getRealLevel(skillOrder[i]);
-                    gainedLvl = curLvl-skills.getLevelAt(startXp[i]);
+                    gainedLvl = curLvl-Skills.getLevelAt(startXp[i]);
                     g.drawString(skillNames[i]+" "+curLvl+" ("+gainedLvl+"): "+gained+" ("+(long)(gained*1000*60*60/ranFor)+") TTL: "+org.rsbot.script.util.Timer.format(skills.getTimeTillNextLevel(skillOrder[i],startXp[i],ranFor)), 190, 378+i*18);
                 }
             }

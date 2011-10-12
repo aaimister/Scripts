@@ -63,6 +63,7 @@ public class SalmonX extends Script implements PaintListener, MouseListener,
 	}
 
 	// Credits Tutorial post && Ministry
+	@SuppressWarnings("deprecation")
 	private void antiBan() {
 		int b = random(0, 24);
 		switch (b) {
@@ -112,7 +113,6 @@ public class SalmonX extends Script implements PaintListener, MouseListener,
 
 	boolean takeItem(RSGroundItem g) {
 		if (!getMyPlayer().isMoving()) {
-			int i = inventory.getCount();
 			status = "Getting Salmon";
 			mouse.click(g.getPoint(), true);
 			// fishcount++;

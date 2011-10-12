@@ -63,6 +63,7 @@ import org.rsbot.script.wrappers.RSPlayer;
 import org.rsbot.script.wrappers.RSTile;
 
 @ScriptManifest(authors = { "Aaimister" }, website = "http://922d1ef9.any.gs", name = "Aaimisters Chicken Killer v1.32", keywords = "Combat", version = 1.32, description = ("Kills chickens."))
+@SuppressWarnings("deprecation")
 public class AaimistersChickenKiller extends Script implements MessageListener, PaintListener, MouseListener {
 
 	private RSTile InPen;
@@ -1049,8 +1050,7 @@ public class AaimistersChickenKiller extends Script implements MessageListener, 
     	}
 	}
     
-    @SuppressWarnings("deprecation")
-	public void checkEXP() {
+    public void checkEXP() {
     	if (game.getCurrentTab() != 2) {
     		game.openTab(2);
     		sleep(500, 900);

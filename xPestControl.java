@@ -2,6 +2,7 @@
 import javax.swing.SwingUtilities;
 import javax.swing.event.*;
 import org.rsbot.script.methods.Game;
+import org.rsbot.script.methods.Game.Tab;
 import org.rsbot.script.util.Timer;
 import java.awt.*;
 import java.awt.event.*;
@@ -350,7 +351,7 @@ public class xPestControl extends Script implements PaintListener, MouseListener
         if (useSpecial > 0) {
             if (spec == 0) {
                 state = "Special attack";
-                game.openTab(game.getTab().ATTACK);
+				game.openTab(Tab.ATTACK);
                 sleep(500, 1000);
                 interfaces.getComponent(884, 8).doClick();
                 spec++;
@@ -563,7 +564,11 @@ public class xPestControl extends Script implements PaintListener, MouseListener
 
     class Project extends JFrame {
 
-        public Project() {
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = -7937301013765455586L;
+		public Project() {
             initComponents();
         }
 
@@ -775,7 +780,11 @@ public class xPestControl extends Script implements PaintListener, MouseListener
 
     class AntiBan extends JFrame {
 
-        /*
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = 7882633332599485012L;
+		/*
         @Author  		Joe Titus
         @Date 		5/8/2011
          */
@@ -794,7 +803,8 @@ public class xPestControl extends Script implements PaintListener, MouseListener
             }
         }
 
-        public void antiBan() {
+        @SuppressWarnings("deprecation")
+		public void antiBan() {
             int t = 0;
             if (Camera) {
                 t++;
@@ -840,7 +850,7 @@ public class xPestControl extends Script implements PaintListener, MouseListener
 
                             default:
                                 state = "Antiban";
-                                game.openTab(game.TAB_STATS);
+                                game.openTab(Game.TAB_STATS);
                                 mouse.moveRandomly(random(1, 300));
                                 sleep(750, 1500);
                                 game.openTab(Game.TAB_INVENTORY);

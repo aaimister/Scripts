@@ -1,21 +1,15 @@
 import java.io.*;
 import java.net.URL;
-import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.event.*;
-
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Image;
-import java.awt.RenderingHints;
 import java.awt.event.*;
 import java.awt.*;
 
 import org.rsbot.script.*;
-import org.rsbot.script.util.*;
+import org.rsbot.script.methods.Skills;
 import org.rsbot.script.wrappers.*;
-import org.rsbot.script.methods.*;
 import org.rsbot.event.listeners.*;
 import org.rsbot.event.events.*;
 
@@ -106,7 +100,7 @@ public class SawmillStriker extends Script implements PaintListener, MessageList
     int laps = 0;
     
     int startXp;
-    int skillId=skills.WOODCUTTING;
+    int skillId=Skills.WOODCUTTING;
     
     private final Color color1 = new Color(202, 184, 150);
     private final Color color2 = new Color(0, 0, 0);
@@ -119,9 +113,6 @@ public class SawmillStriker extends Script implements PaintListener, MessageList
     private final Font font1 = new Font("Courier New", 0, 12);
     private final Font font2 = new Font("Arial", 0, 18);
     private final Font font3 = new Font("Courier New", 1, 12);
-    
-    private final Color color6 = new Color(32, 28, 22);
-    private final Color color7 = new Color(255, 205, 0);
     
     enum TaskEnum {
         WAIT_FOR_ANIMATION,
@@ -435,8 +426,7 @@ public class SawmillStriker extends Script implements PaintListener, MessageList
                 updatePlankVals();
                 startingPlanks = inventory.getCount(plank);
                 xpBeforePlanks = skills.getCurrentExp(skillId);
-                long startedCuttingTime = System.currentTimeMillis()-startMillis;
-                if (numNeeded[5]>numOnCart[5]) {
+			if (numNeeded[5]>numOnCart[5]) {
                     cuttingPlank = 3;
                     planksBeforeCutting = numOnCart[5];
                     craftPlanks(numNeeded[5]-numOnCart[5],3);
@@ -598,15 +588,6 @@ public class SawmillStriker extends Script implements PaintListener, MessageList
         return true;
     }
     
-    private boolean canTakeMore() {
-        if (inventory.isFull()) return false;
-        int sum=0;
-        for (int i=0;i<6;i++) {
-            if (i!=4&&i!=3) sum += numOnCart[i]-numNeeded[i];
-        }
-        return sum>0;
-    }
-    
     private int getExtraPlanks() {
         int ret=0;
         for (int i=0;i<4;i++) {
@@ -739,7 +720,7 @@ public class SawmillStriker extends Script implements PaintListener, MessageList
             c.interact("Withdraw 10");
         }
         else {
-            String before = interfaces.getComponent(752,5).getText();
+            interfaces.getComponent(752,5).getText();
             c.interact("Withdraw X");
             sleep(2000);
             keyboard.sendText(num+"",true);
@@ -780,15 +761,6 @@ public class SawmillStriker extends Script implements PaintListener, MessageList
         return planksAvailable;
     }
     
-    private String arrayToString(String[] in) {
-        if (in.length==0) return "No elements";
-        String ret = "";
-        for (int i=0;i<in.length;i++) {
-            ret += in[i]+",";
-        }
-        return ret.substring(0,ret.length()-2);
-    }
-                    
     private boolean isWorkbenchOpen() {
         return interfaces.get(makeInterface).isValid();
     }
@@ -800,7 +772,6 @@ public class SawmillStriker extends Script implements PaintListener, MessageList
     private void refreshVars() {
         if (interfaces.get(jobInterface).isValid()) {
             jobOpen = true;
-            String cur;
             for (int i=0;i<plankId.length;i++) {
                 numOnCart[i] = Integer.parseInt(interfaces.getComponent(jobInterface,jobCurrentComponent[i]).getText());
                 numNeeded[i] = Integer.parseInt(interfaces.getComponent(jobInterface,jobNeededComponent[i]).getText());
@@ -826,44 +797,6 @@ public class SawmillStriker extends Script implements PaintListener, MessageList
         }
         return true;
     }
-    
-    private boolean arrayContains(int[] a, int b) {
-        for (int i=0;i<a.length;i++) {
-            if (a[i]==b) return true;
-        }
-        return false;
-    }
-    
-    private int inArrayAtLocation(int[] a, int b) {
-        for (int i=0;i<a.length;i++) {
-            if (a[i]==b) return i;
-        }
-        return -1;
-    }
-    
-    private boolean arrayContains(String[] a, String b) {
-        for (int i=0;i<a.length;i++) {
-            if (a[i].equalsIgnoreCase(b)) return true;
-        }
-        return false;
-    }
-    
-    private int inArrayAtLocation(String[] a, String b) {
-        for (int i=0;i<a.length;i++) {
-            if (a[i].equalsIgnoreCase(b)) return i;
-        }
-        return -1;
-    }
-                                                            
-    private boolean arrayContainsContains(String[] a, String b) {
-        if (b==null) return false;
-        for (int i=0;i<a.length;i++) {
-            if (a[i]!=null&&(a[i].contains(b)||b.contains(a[i]))) return true;
-        }
-        return false;
-    }
-                                                    
-
     
     public void messageReceived(MessageEvent e) {
         String msg = e.getMessage().toLowerCase();
@@ -904,14 +837,24 @@ public class SawmillStriker extends Script implements PaintListener, MessageList
     }
     
     class OptionPanel extends JPanel {
-        OptionPanel() {
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = -8646593001355897811L;
+
+		OptionPanel() {
             setLayout(new GridBagLayout());
-            GridBagConstraints c = new GridBagConstraints();
+            new GridBagConstraints();
         }
     }
     
     class AboutPanel extends JPanel {
-        AboutPanel() {
+        /**
+		 * 
+		 */
+		private static final long serialVersionUID = 2288572463721307666L;
+
+		AboutPanel() {
             setLayout(new BorderLayout());
             JTextArea jtf = new JTextArea("Created by Strikeskids\nTo use you must have 70 agility\nIt is recommended that you bring 2 food in case of emergencies\nSet quick prayers to protect item and protect melee\nHave antipoison, falador teleports, super pots (if using), prayer pots (if using), and food (if using) in one bank tab\nIf praying at monastery you must be wearing an ardy task cape\nHave all food and potions used, vials, and falador teleports in one bank tab. Have that bank tab selected",5,120);
             JScrollPane jsp = new JScrollPane(jtf);
@@ -945,46 +888,6 @@ public class SawmillStriker extends Script implements PaintListener, MessageList
         return ret;
     }
     
-    private boolean arePlanksCut(int loc) {
-        switch (loc) {
-            case 0:
-                return planksCut[0]>0;
-            case 1:
-                return planksCut[0]>0;
-            case 2:
-                return planksCut[2]>0;
-            case 3:
-                return planksCut[1]>0;
-            case 4:
-                return planksCut[1]>0;
-            case 5:
-                return planksCut[3]>0;
-        }
-        return false;
-    }
-    
-    private int numPlanksCut(int loc) {
-        switch (loc) {
-            case 0:
-                return planksCut[0];
-            case 1:
-                return planksCut[0];
-            case 2:
-                return planksCut[2];
-            case 3:
-                return planksCut[1];
-            case 4:
-                return planksCut[1];
-            case 5:
-                return planksCut[3];
-        }
-        return 0;
-    }
-    
-    private int numPlanksLeft(int loc) {
-        return numNeeded[loc]-numOnCart[loc];
-    }
-    
     private String getPlankRatio(int loc) {
         if (loc==-1) return formatDouble((double)sumArray(planksRecieved)/(double)sumArray(planksCut),2);
         return formatDouble((double)planksRecieved[loc]/(double)planksCut[loc],2);
@@ -993,24 +896,6 @@ public class SawmillStriker extends Script implements PaintListener, MessageList
     private String getPlankXpRatio(int loc) {
         if (loc==-1) return formatDouble((double)sumArray(xpForPlanks)/(double)sumArray(planksCut),2);
         return formatDouble((double)xpForPlanks[loc]/(double)planksCut[loc],2);
-    }
-    
-    private long getTimeCuttingFor(int loc) {
-        switch (loc) {
-            case 0:
-                return cuttingFor[0];
-            case 1:
-                return cuttingFor[0];
-            case 2:
-                return cuttingFor[2];
-            case 3:
-                return cuttingFor[1];
-            case 4:
-                return cuttingFor[1];
-            case 5:
-                return cuttingFor[3];
-        }
-        return 10000000;
     }
     
     public int sumArray(int[] in) {
@@ -1053,7 +938,7 @@ public class SawmillStriker extends Script implements PaintListener, MessageList
             long gained = skills.getCurrentExp(skillId)-startXp;
             if (t.length<2&&gained>0) {
                 int curLvl = skills.getRealLevel(skillId);
-                int gainedLvl = curLvl-skills.getLevelAt(startXp);
+                int gainedLvl = curLvl-Skills.getLevelAt(startXp);
                 g.setColor(color3);
                 g.fillRect(7, 459, 505, 14);
                 g.setColor(color4);
@@ -1083,30 +968,6 @@ public class SawmillStriker extends Script implements PaintListener, MessageList
         g.drawRect(476, 437, 18, 19);
     }
     
-    private final Font font4 = new Font("GB18030 Bitmap", 0, 11);
-    
-    private void drawPlankTimer(Graphics2D g) {
-        if (showTime) {
-            int[] yLoc = {54,71,88,105,122,140};
-            g.setColor(color6);
-            g.setFont(font4);
-            for (int i=0;i<6;i++) {
-                if (arePlanksCut(i)&&numPlanksLeft(i)>0) {
-                    g.setColor(color6);
-                    g.fillRoundRect(93,yLoc[i],45,12,5,16);
-                    g.setColor(color7);
-                    long timeLeft=0;
-                    if (numPlanksLeft(i)>0) {
-                        int numCut = numPlanksCut(i);
-                        if (i!=2&&i!=5) numCut /= 2;
-                        timeLeft = numPlanksLeft(i)*getTimeCuttingFor(i)/numCut;
-                    }
-                    g.drawString(org.rsbot.script.util.Timer.format(timeLeft),97,yLoc[i]+10);
-                }
-            }
-        }
-    }
-    
     public void mouseClicked(MouseEvent e) {
         
     }
@@ -1129,29 +990,6 @@ public class SawmillStriker extends Script implements PaintListener, MessageList
     
     private void antiBan() {
         //doAntiban();
-    }
-    
-    private void doAntiban() {
-        if (random(1,7)==4) {
-            //Going to do antiban
-            switch(random(0,2)) {
-                case 0:
-                    if (random(0,7)==2) {
-                        game.openTab(game.TAB_STATS);
-                        sleep(1000);
-                        skills.doHover(skills.INTERFACE_WOODCUTTING);
-                        sleep(1000);
-                        game.openTab(game.TAB_INVENTORY);
-                    }
-                    justMoved=true;
-                    break;
-                case 1:
-                    mouse.moveRandomly(100);
-                    justMoved=true;
-                    break;
-            }
-        }
-        if (random(1,5)==3) justMoved = false;
     }
 
 }

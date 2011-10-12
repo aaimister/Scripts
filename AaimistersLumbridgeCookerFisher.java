@@ -1038,6 +1038,7 @@ public class AaimistersLumbridgeCookerFisher extends Script implements PaintList
     	}
 	}
 	
+	@SuppressWarnings("deprecation")
 	public void checkXP() {
 		if (!check) {
 			return;
@@ -1239,8 +1240,6 @@ public class AaimistersLumbridgeCookerFisher extends Script implements PaintList
 			}
 		}
 	   
-	private Image Mouse = getImage("http://i88.photobucket.com/albums/k170/aaimister/mousee.png");
-	private Image cMouse = getImage("http://i88.photobucket.com/albums/k170/aaimister/cmouse.png");	
 	private Image logo = getImage("http://i88.photobucket.com/albums/k170/aaimister/AaimistersLumCookerFisher.png");
 	private Image atom = getImage("http://i88.photobucket.com/albums/k170/aaimister/Atomm.png");
 		

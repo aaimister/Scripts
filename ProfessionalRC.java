@@ -55,9 +55,6 @@ public class ProfessionalRC extends Script implements PaintListener, MessageList
 	
 	private final int ESSENCE_ID = 1436;
 	private final int ESSENCE_NOTE_ID = 1437;
-	private final int PURE_ESSENCE_ID = 7936;
-	private final int PURE_ESSENCE_NOTE_ID = 7937;
-
 	private Properties prop = null;
 	private InfoDatabase info = null;
 
@@ -255,15 +252,8 @@ public class ProfessionalRC extends Script implements PaintListener, MessageList
 	private int startExp = 0;
 	private int expGained = 0;
 	private int expHour = 0;
-	private int altarsHour = 0;
-
 	private long startTime = 0;
 	private long millis = 0;
-	private long hours = 0;
-	private long minutes = 0;
-	private long seconds = 0;
-	private long last = 0;	
-
 	private final RenderingHints antialiasing = new RenderingHints(
 			RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 
@@ -461,7 +451,6 @@ public class ProfessionalRC extends Script implements PaintListener, MessageList
 			millis = System.currentTimeMillis() - startTime;
 		
 			expGained = skills.getCurrentExp(Skills.RUNECRAFTING) - startExp;
-			altarsHour = (int) ((altarsClicked) * 3600000D / millis);
 			expHour = (int) ((expGained) * 3600000D / millis);
 
 			int i = 380;
@@ -1333,17 +1322,13 @@ public class ProfessionalRC extends Script implements PaintListener, MessageList
 		private final RSTile BANK_TILE = data.BANK_TILE;
 		private final RSTile ALTAR_TILE = data.ALTAR_TILE;
 		private final RSTile PORTAL_TILE = data.PORTAL_TILE;
-		private final RSArea ALTAR_AREA = data.ALTAR_AREA;
 		private final RSArea BANK_AREA = data.BANK_AREA;
 		private final RSTile STAIR_TILE = data.STAIR_TILE;
 		private final int MUSICIAN_ID = data.MUSICIAN_ID;	
 		
 		private final RSArea PATH_AREA = new RSArea(PATH_AREA_TILES);		
 		private final int RESTING_ANIMS[] ={ 5713, 5748, 2033, 2716, 12108, 11786 };
-		private final int PAYMENT_ID[] = { 1437, 7937, 556, 995 };
 		private final int ESSENCE_ID = 1436;
-		private final int PURE_ESSENCE_ID = 7936;
-		
 		private Filter<RSPlayer> CRAFTER_FILTER = new Filter<RSPlayer>() {
 			public boolean accept(RSPlayer t) {
 				if (t != null) {
@@ -1378,10 +1363,6 @@ public class ProfessionalRC extends Script implements PaintListener, MessageList
 
 		private int getMusicianID() {
 			return this.MUSICIAN_ID;
-		}
-
-		private int[] getPaymentID() {
-			return this.PAYMENT_ID;
 		}
 
 		private int getEssenceID() {

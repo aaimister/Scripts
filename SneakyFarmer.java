@@ -25,7 +25,6 @@ import java.awt.geom.GeneralPath;
 import java.util.ArrayList;
 
 @ScriptManifest(authors={"MrSneaky"}, keywords={"Farming", "mrsneaky", "herb", "farmer"}, name="SneakyFarmer", description="Farms herbs at 3 patches", version=1.61, website = "http://www.powerbot.org/vb/showthread.php?t=523925", requiresVersion = 244)
-@SuppressWarnings("deprecation")
 public class SneakyFarmer extends Script implements MessageListener, PaintListener, MouseListener {
 
     private static String scriptVersion = "1.61";
