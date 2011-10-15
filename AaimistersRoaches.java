@@ -1,6 +1,6 @@
 /**
  * @author Aaimister
- * @version 1.24 ©2010-2011 Aaimister, No one except Aaimister has the right to
+ * @version 1.25 ©2010-2011 Aaimister, No one except Aaimister has the right to
  *          modify and/or spread this script without the permission of Aaimister.
  *          I'm not held responsible for any damage that may occur to your
  *          property.
@@ -66,6 +66,7 @@ import org.rsbot.event.listeners.PaintListener;
 import org.rsbot.gui.AccountManager;
 import org.rsbot.script.Script;
 import org.rsbot.script.ScriptManifest;
+import org.rsbot.script.methods.Game;
 import org.rsbot.script.util.Filter;
 import org.rsbot.script.wrappers.RSArea;
 import org.rsbot.script.wrappers.RSGroundItem;
@@ -76,7 +77,7 @@ import org.rsbot.script.wrappers.RSPath;
 import org.rsbot.script.wrappers.RSPlayer;
 import org.rsbot.script.wrappers.RSTile;
 
-@ScriptManifest(authors = { "Aaimister" }, website = "http://3ff8d067.any.gs", name = "Aaimister's Roach Killer v1.24", keywords = "Combat", version = 1.24, description = ("Kills roaches in Edgville."))
+@ScriptManifest(authors = { "Aaimister" }, website = "http://3ff8d067.any.gs", name = "Aaimister's Roach Killer v1.25", keywords = "Combat", version = 1.25, description = ("Kills roaches in Edgville."))
 public class AaimistersRoaches  extends Script implements PaintListener, MouseListener, MessageListener {
 
 	private static interface AM {
@@ -365,7 +366,7 @@ public class AaimistersRoaches  extends Script implements PaintListener, MouseLi
 	}
 
 	public double getVersion() { 
-		return 1.24;
+		return 1.25;
 	}
 
 	public boolean onStart() {
@@ -494,6 +495,7 @@ public class AaimistersRoaches  extends Script implements PaintListener, MouseLi
 			long varTime = random(3660000, 10800000);
 			nextBreak = System.currentTimeMillis() + varTime;
 			nextBreakT = varTime;
+			long varLength = random(900000, 3600000);
 			nextLength = nextBreakT;
 		} else {
 			int diff = random(0, 5) * 1000 * 60;
@@ -548,6 +550,7 @@ public class AaimistersRoaches  extends Script implements PaintListener, MouseLi
 				}
 				if (bank.getItem(p) != null) {
 					bank.withdraw(p, potions.get(i));
+					sleep(134, 264);
 					idle = 0;
 				}
 			}
@@ -883,6 +886,10 @@ public class AaimistersRoaches  extends Script implements PaintListener, MouseLi
 				clicked = false;
 				idle = 0;
 			}
+			if (!bank.isOpen() && !combat.isAutoRetaliateEnabled()) {
+				combat.setAutoRetaliate(true);
+				sleep(184, 348);
+			}
 			try {
 				if (game.getPlane() != 3) {
 					if (calc.distanceTo(AM.dropTile) > 3) {
@@ -940,6 +947,10 @@ public class AaimistersRoaches  extends Script implements PaintListener, MouseLi
 			if (idle > 8) {
 				clicked = false;
 				idle = 0;
+			}
+			if (combat.isAutoRetaliateEnabled()) {
+				combat.setAutoRetaliate(false);
+				sleep(184, 348);
 			}
 			status = "Walking to bank";
 			try {
@@ -1330,10 +1341,9 @@ public class AaimistersRoaches  extends Script implements PaintListener, MouseLi
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	public void checkXP() {
-		if (game.getCurrentTab() != 2) {
-			game.openTab(2);
+		if (game.getTab() != Game.Tab.STATS) {
+			game.openTab(Game.Tab.STATS);
 			sleep(500, 900);
 		}
 
@@ -1366,7 +1376,7 @@ public class AaimistersRoaches  extends Script implements PaintListener, MouseLi
 			break;
 		}
 		sleep(2800, 5500);
-		game.openTab(4);
+		game.openTab(Game.Tab.INVENTORY);
 		sleep(50, 100);
 		mouse.moveRandomly(50, 900);
 	}
