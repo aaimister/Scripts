@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Locale;
 import java.util.regex.Matcher;
@@ -54,9 +55,9 @@ import org.rsbot.script.wrappers.RSTile;
 import org.rsbot.script.wrappers.RSWeb;
 
 @ScriptManifest(website = "http://goo.gl/WEQX6", authors = { "hlunnb" }, keywords = { "Woodcutting, Firemaking" },
-        name = "Dynamic Woodcutter", version = 1.86,
+        name = "Dynamic Woodcutter", version = 1.87,
         description = "Independently trains Woodcutting and Firemaking from a low level.")
-public class Dwc extends Script implements PaintListener, MouseListener, MouseMotionListener, MessageListener {
+public class DynamicWoodcutter extends Script implements PaintListener, MouseListener, MouseMotionListener, MessageListener {
 	final RSArea adviserHouse = new RSArea(new RSTile(3229, 3236), new RSTile(3232, 3241));
 	final RSArea bobsArea = new RSArea(new RSTile(3227, 3201), new RSTile(3233, 3205));
 	final RSTile bobsTile = new RSTile(3230, 3203);
@@ -121,6 +122,7 @@ public class Dwc extends Script implements PaintListener, MouseListener, MouseMo
 	public static final int mithrilHatchetId = 1355;
 	public static final int adamantHatchetId = 1357;
 	public static final int runeHatchetId = 1359;
+	public static final int dragonHatchetId = 6739;
 	public static final int tinderboxId = 590;
 	public static final int regularLogId = 1511;
 	public static final int oakLogId = 1521;
@@ -368,7 +370,7 @@ public class Dwc extends Script implements PaintListener, MouseListener, MouseMo
 							else {
 								if (bank.getItem(995) != null) {
 									bank.withdraw(995, random(25, 30) * 1000);
-									sleep(1000);
+									sleep(2000);
 								}
 								if (bank.getItem(oakLogId) != null) {
 									bank.withdraw(oakLogId, 0);
@@ -875,16 +877,18 @@ public class Dwc extends Script implements PaintListener, MouseListener, MouseMo
 			return 0;
 		}
 		final RSObject depositBox = objects.getNearest(Bank.DEPOSIT_BOXES);
-		if (depositBox != null && depositBox.isOnScreen()) {
-			if (!depositBox.interact("Deposit " + depositBox.getName())) {
-				new Camera(depositBox);
-				return 0;
-			}
-			chill();
-			return random(700, 1500);
+		if (depositBox == null || calc.distanceTo(depositBox) >= 10) {
+			webWalk(new RSTile(3047, 3235));
+			return random(500, 1000);
 		}
-		webWalk(new RSTile(3047, 3235));
-		return random(500, 1000);
+		if (depositBox.isOnScreen()) {
+			depositBox.interact("Deposit " + depositBox.getName());
+		} else if (calc.distanceTo(depositBox) < 10) {
+			walking.walkTileMM(depositBox.getLocation());
+			new Camera(depositBox);
+		}
+		chill();
+		return random(700, 1500);
 	}
 	private boolean depositAllExcept(int[] ids) {
 		int money = inventory.contains(995) ? inventory.getItem(995).getStackSize() : 0;
@@ -1135,7 +1139,7 @@ public class Dwc extends Script implements PaintListener, MouseListener, MouseMo
 				return 0;
 			sleep(random(1500, 2000));
 			final RSItem[] bankItems = bank.getItems();
-			for (final RSItem r : bankItems) {
+			for (final RSItem r : bankItems) { // TODO Change to item ids.
 				final String name = r.getName();
 				if (name.contains("Bronze hatchet"))
 					hasBronzeHatchet = true;
@@ -1151,6 +1155,8 @@ public class Dwc extends Script implements PaintListener, MouseListener, MouseMo
 					hasAdamantHatchet = true;
 				if (name.contains("Rune hatchet"))
 					hasRuneHatchet = true;
+				if (name.contains("Dragon hatchet"))
+					hasDragonHatchet = true;
 			}
 			bestHatchetAvailable = bestHatchetAvailable();
 			final RSItem coins = bank.getItem("Coins");
@@ -1186,8 +1192,8 @@ public class Dwc extends Script implements PaintListener, MouseListener, MouseMo
 			if (inventory.contains(bestHatchetAvailable) && bestHatchetAvailable != -1
 			        && (!trainFM || trainFM && inventory.contains(tinderboxId))) {
 				checkBank = false;
-				checkedBank = true;
-				bank.close();
+				if (bank.close())
+					checkedBank = true;
 			}
 		}
 		if (!draynorBankArea.contains(myLocation())) {
@@ -1416,37 +1422,34 @@ public class Dwc extends Script implements PaintListener, MouseListener, MouseMo
 	}
 	private boolean clickTin() {
 		final RSItem tin = inventory.getItem(tinderboxId);
-		if (tin != null && tin.interact("Use"))
+		if (tin != null && tin.doClick(true))
 			return true;
 		return false;
 	}
 	private boolean clickLog() {
-		final RSItem[] logs = inventory.getItems(false);
+		final RSItem[] logs = inventory.getItems(logIds);
 		RSItem log = null;
 		outer: for (final RSItem l : logs) {
-			if (l == null)
-				continue;
-			if (dontClick != null)
-				if (l.getComponent().equals(dontClick.getComponent()))
-					continue;
+			for (int i : logIds) {
+				if (l != null
+				        && l.getID() == i
+				        && (dontClick == null || dontClick != null
+				                && !l.getComponent().equals(dontClick.getComponent()))) {
+					log = l;
+					break outer;
+				}
+			}
 			if (!canBurn(l)) {
 				inventory.dropItem(l);
 				sleep(random(500, 750));
 				continue;
 			}
-			for (int i : logIds) {
-				if (l.getID() == i) {
-					log = l;
-					break outer;
-				}
-			}
 		}
-		if (log != null)
-			if (log.interact("Use")) {
-				if (inventory.getCount(logIds) > 1)
-					dontClick = log;
-				return true;
-			}
+		if (log != null && log.interact("Use")) {
+			if (inventory.getCount(logIds) > 1)
+				dontClick = log;
+			return true;
+		}
 		return false;
 	}
 	private boolean canBurn(final RSItem l) {
@@ -1569,6 +1572,9 @@ public class Dwc extends Script implements PaintListener, MouseListener, MouseMo
 	 */
 	private int bestHatchetAvailable() {
 		final int wcLvl = wcLvl();
+		if (hasDragonHatchet || inventory.contains(dragonHatchetId))
+			if (wcLvl() >= 61)
+				return dragonHatchetId;
 		if (hasRuneHatchet || inventory.contains(runeHatchetId))
 			if (wcLvl >= 41)
 				return runeHatchetId;
@@ -1696,7 +1702,7 @@ public class Dwc extends Script implements PaintListener, MouseListener, MouseMo
 		public void run() {
 			try {
 				if (r != null)
-					if (camera.getPitch() < 25 || random(0, 2) == 0 && camera.getPitch() < 60) {
+					if (camera.getPitch() < 30 || random(0, 2) == 0 && camera.getPitch() < 60) {
 						keyboard.pressKey((char) KeyEvent.VK_UP);
 						final Timer t = new Timer(random(500, 1000));
 						if (camera.getAngleTo(camera.getTileAngle(r)) > random(45, 70))
@@ -2705,6 +2711,7 @@ public class Dwc extends Script implements PaintListener, MouseListener, MouseMo
 	boolean hasMithrilHatchet = false;
 	boolean hasAdamantHatchet = false;
 	boolean hasRuneHatchet = false;
+	boolean hasDragonHatchet = false;
 	int bestHatchetAvailable = -1;
 	public final int CLERKS = 2593; // 2241, 2240, 2593, 1419
 	public final int BANKERS = 3416; // 3293, 3416, 2718, 3418
@@ -3707,20 +3714,21 @@ public class Dwc extends Script implements PaintListener, MouseListener, MouseMo
 						case 3:
 							antiBan = "Right clicking an item.";
 							RSItem itemTarg = null;
+							ArrayList<RSItem> a = new ArrayList<RSItem>();
 							for (final RSItem p : inventory.getItems())
 								if (p != null) {
-									itemTarg = p;
-									break;
+									a.add(p);
 								}
-							if (itemTarg != null) {
-								itemTarg.doClick(false);
-								sleep(300, 700);
-								if (random(0, 5) == 0) {
-									menu.click("Examine");
-									sleep(random(100, 300));
-								}
-								mouse.moveSlightly();
+							if (a.isEmpty())
+								break;
+							itemTarg = a.get(random(0, a.size()));
+							itemTarg.doClick(false);
+							sleep(300, 700);
+							if (random(0, 5) == 0) {
+								menu.click("Examine");
+								sleep(random(400, 600));
 							}
+							mouse.moveSlightly();
 							break;
 						case 4:
 							antiBan = "Checking XP total.";
@@ -3795,7 +3803,9 @@ public class Dwc extends Script implements PaintListener, MouseListener, MouseMo
 			status = "Depositing";
 			return State.DEPOSIT;
 		}
+		bestHatchetAvailable = bestHatchetAvailable();
 		if (!inventory.contains(runeHatchetId)
+		        && bestHatchetAvailable != dragonHatchetId
 		        && (runeHatchetPrice * 1.2 < totalCash && runeHatchetPrice != -1 && wcLvl() >= 41
 		                && !useAvailableHatchets || sentOffer)) {
 			status = "Rune hatchet";
@@ -3811,7 +3821,6 @@ public class Dwc extends Script implements PaintListener, MouseListener, MouseMo
 			return State.BUYTINDERBOX;
 		}
 		if (!useAvailableHatchets) {
-			bestHatchetAvailable = bestHatchetAvailable();
 			if (bestHatchetAvailable == -1) {
 				status = "Buying hatchet";
 				return State.BUYHATCHET;
